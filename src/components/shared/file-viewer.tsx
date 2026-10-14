@@ -109,10 +109,12 @@ export function PdfViewer({
   url,
   title,
   className,
+  height = 520,
 }: {
   url: string;
   title?: string;
   className?: string;
+  height?: number;
 }) {
   if (!url) return <EmptyState label="PDF" />;
 
@@ -122,7 +124,8 @@ export function PdfViewer({
       <iframe
         src={url}
         title={title || "Dokumen PDF"}
-        className="h-[520px] w-full bg-muted"
+        style={{ height }}
+        className="w-full bg-muted"
       />
     </div>
   );
@@ -133,10 +136,12 @@ export function SlidesViewer({
   url,
   title,
   className,
+  height = 520,
 }: {
   url: string;
   title?: string;
   className?: string;
+  height?: number;
 }) {
   if (!url) return <EmptyState label="Presentasi" />;
 
@@ -153,11 +158,15 @@ export function SlidesViewer({
         <iframe
           src={officeUrl}
           title={title || "Slide presentasi"}
-          className="h-[520px] w-full bg-muted"
+          style={{ height }}
+          className="w-full bg-muted"
           allowFullScreen
         />
       ) : (
-        <div className="flex h-64 flex-col items-center justify-center gap-2 bg-muted text-center">
+        <div
+          style={{ height }}
+          className="flex flex-col items-center justify-center gap-2 bg-muted text-center"
+        >
           <Presentation className="size-6 text-muted-foreground" />
           <p className="text-sm font-semibold">
             Preview slide butuh URL publik

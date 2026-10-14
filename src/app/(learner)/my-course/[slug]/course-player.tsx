@@ -103,7 +103,7 @@ export function CoursePlayer({ slug }: { slug: string }) {
 
       <div className="grid grid-cols-[320px_1fr] items-start gap-[18px]">
         {/* Silabus */}
-        <div className="flex flex-col gap-3.5 rounded-2xl border border-border bg-card p-4">
+        <div className="sticky top-0 flex max-h-[calc(100vh-180px)] flex-col gap-3.5 overflow-y-auto rounded-2xl border border-border bg-card p-4">
           <div className="flex flex-col gap-0.5">
             <p className="font-heading text-[15px] font-semibold">Silabus</p>
             <p className="text-xs text-muted-foreground">{course.title}</p>

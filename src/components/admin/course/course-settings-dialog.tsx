@@ -82,7 +82,7 @@ export function CourseSettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
+      <DialogContent className="flex max-h-[90vh] flex-col gap-4 overflow-hidden sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="font-heading text-lg">
             Pengaturan Kursus
@@ -93,6 +93,7 @@ export function CourseSettingsDialog({
           </DialogDescription>
         </DialogHeader>
 
+        <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1">
         <form
           id="course-settings-form"
           onSubmit={(event) => {
@@ -227,6 +228,7 @@ export function CourseSettingsDialog({
             </div>
           </div>
         </form>
+        </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

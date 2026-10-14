@@ -7,7 +7,6 @@ export const api = axios.create({
   baseURL: API_URL,
   // Sesi disimpan di httpOnly cookie dari backend
   withCredentials: true,
-  headers: { "Content-Type": "application/json" },
 });
 
 api.interceptors.response.use(
