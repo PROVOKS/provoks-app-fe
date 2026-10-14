@@ -23,6 +23,47 @@ export type Path = {
   createdAt: string;
 };
 
+export type PathEnrollmentStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export type StudentPath = {
+  id: string;
+  name: string;
+  slug: string;
+  status: PathEnrollmentStatus;
+  enrollmentId: string;
+};
+
+export type Student = {
+  id: string;
+  name: string;
+  email: string;
+  nim?: string | null;
+  prodi?: string | null;
+  createdAt: string;
+  paths: StudentPath[];
+};
+
+export type PathRequest = {
+  id: string;
+  status: PathEnrollmentStatus;
+  note?: string | null;
+  createdAt: string;
+  reviewedAt?: string | null;
+  student: {
+    id: string;
+    name: string;
+    email: string;
+    nim?: string | null;
+    prodi?: string | null;
+  };
+  path: {
+    id: string;
+    name: string;
+    slug: string;
+    isFastTrack: boolean;
+  };
+};
+
 export type Tag = {
   id: string;
   name: string;

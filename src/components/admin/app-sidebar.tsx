@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import {
   Award,
   BarChart3,
@@ -17,12 +18,15 @@ import {
   Route,
   Settings,
   Tags,
+  UserCheck,
   UserPlus,
   Users,
 } from "lucide-react";
 
 import { LogoutButton } from "@/components/shared/logout-button";
+import { api, type ApiEnvelope } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
+import type { Paginated, PathRequest } from "@/types";
 
 const MAIN_NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -36,6 +40,7 @@ const MAIN_NAV = [
 ];
 
 const MANAGE_NAV = [
+  { href: "/dashboard/path-requests", label: "Permintaan Path", icon: UserCheck },
   { href: "/dashboard/enrollments", label: "Enrollments", icon: UserPlus },
   { href: "/dashboard/instructors", label: "Instructors", icon: GraduationCap },
   { href: "/dashboard/schedule", label: "Schedule", icon: Calendar },
@@ -98,6 +103,17 @@ function NavItem({
 }
 
 export function AppSidebar() {
+  const { data: pendingRequests } = useQuery({
+    queryKey: ["path-requests", "PENDING"],
+    queryFn: async () => {
+      const { data } = await api.get<ApiEnvelope<Paginated<PathRequest>>>(
+        "/students/path-requests",
+        { params: { status: "PENDING", perPage: 1 } },
+      );
+      return data.data.meta.total;
+    },
+  });
+
   return (
     <aside className="flex h-full w-[248px] shrink-0 flex-col justify-between gap-4 overflow-y-auto rounded-[20px] border border-border bg-card p-4 shadow-sm">
       <div className="flex flex-col gap-4">
@@ -123,7 +139,15 @@ export function AppSidebar() {
         </p>
         <nav className="flex flex-col gap-1">
           {MANAGE_NAV.map((item) => (
-            <NavItem key={item.href} {...item} />
+            <NavItem
+              key={item.href}
+              {...item}
+              badge={
+                item.href === "/dashboard/path-requests" && pendingRequests
+                  ? String(pendingRequests)
+                  : undefined
+              }
+            />
           ))}
         </nav>
 

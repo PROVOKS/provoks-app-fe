@@ -1,62 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
-import { BookOpen, CheckCircle2, Clock, Flame, Play } from "lucide-react";
+import { BookOpen, CheckCircle2, Clock, Flame, Lock, Play, Send } from "lucide-react";
 
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { api, type ApiEnvelope } from "@/lib/api-client";
-import type { Course, Paginated } from "@/types";
-
-function totalSilabus(course: Course) {
-  return (course.parts ?? []).reduce(
-    (total, part) => total + (part.silabusParts?.length ?? 0),
-    0,
-  );
-}
-
-function totalMinutes(course: Course) {
-  return (course.parts ?? []).reduce(
-    (total, part) =>
-      total +
-      (part.silabusParts ?? []).reduce(
-        (sum, item) => sum + item.durationMinutes,
-        0,
-      ),
-    0,
-  );
-}
+import { useMyCourses, useMyPaths, useRequestPath } from "@/hooks/use-learning";
 
 export default function MyLearningPage() {
   const { user } = useAuth();
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["my-courses"],
-    queryFn: async () => {
-      const { data } = await api.get<ApiEnvelope<Paginated<Course>>>(
-        "/courses",
-        { params: { status: "PUBLISHED", perPage: 50 } },
-      );
-      return data.data.items;
-    },
-  });
+  const coursesQuery = useMyCourses();
+  const pathsQuery = useMyPaths();
+  const requestPath = useRequestPath();
 
-  const courses = data ?? [];
-  const totalMenit = courses.reduce((sum, course) => sum + totalMinutes(course), 0);
-  const totalSilabusCount = courses.reduce(
-    (sum, course) => sum + totalSilabus(course),
-    0,
-  );
-  const continueCourse = courses[0];
+  const courses = coursesQuery.data ?? [];
+  const paths = pathsQuery.data ?? [];
+
+  const totalMenit = courses.reduce((sum, course) => sum + course.durationMinutes, 0);
+  const totalSilabusCount = courses.reduce((sum, course) => sum + course.silabusCount, 0);
+  const continueCourse = courses.find((course) => course.progressPercent < 100) ?? courses[0];
 
   const stats = [
     {
       label: "Course Aktif",
       value: String(courses.length),
-      sub: "course yang tersedia",
+      sub: "dari path yang kamu ikuti",
       icon: BookOpen,
     },
     {
@@ -110,9 +81,9 @@ export default function MyLearningPage() {
         ))}
       </div>
 
-      {isLoading ? (
+      {coursesQuery.isLoading ? (
         <Skeleton className="h-32 w-full rounded-2xl" />
-      ) : isError ? (
+      ) : coursesQuery.isError ? (
         <p className="rounded-2xl border border-border bg-card py-12 text-center text-sm text-muted-foreground">
           Gagal memuat course. Pastikan backend berjalan.
         </p>
@@ -127,24 +98,29 @@ export default function MyLearningPage() {
                 {continueCourse.title}
               </p>
               <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                <div className="h-full w-0 rounded-full bg-primary" />
+                <div
+                  className="h-full rounded-full bg-primary"
+                  style={{ width: `${continueCourse.progressPercent}%` }}
+                />
               </div>
               <p className="text-[13px] text-muted-foreground">
-                {totalSilabus(continueCourse)} silabus ·{" "}
-                {Math.round(totalMinutes(continueCourse) / 60)} jam materi ·{" "}
-                <span className="font-semibold text-primary">Belum dimulai</span>
+                {continueCourse.silabusCount} silabus ·{" "}
+                {Math.round(continueCourse.durationMinutes / 60)} jam materi ·{" "}
+                <span className="font-semibold text-primary">
+                  {continueCourse.progressPercent > 0
+                    ? `${continueCourse.progressPercent}% selesai`
+                    : "Belum dimulai"}
+                </span>
               </p>
             </div>
             <Button asChild>
-              <Link href={`/my-course/${continueCourse.slug}`}>
-                Lanjutkan belajar
-              </Link>
+              <Link href={`/my-course/${continueCourse.slug}`}>Lanjutkan belajar</Link>
             </Button>
           </CardContent>
         </Card>
       ) : (
         <p className="rounded-2xl border border-border bg-card py-12 text-center text-sm text-muted-foreground">
-          Belum ada course yang dipublikasikan.
+          Belum ada course di path yang kamu ikuti. Ajukan path di bawah ini.
         </p>
       )}
 
@@ -160,15 +136,25 @@ export default function MyLearningPage() {
                   <p className="font-heading text-[15px] font-semibold">
                     {course.title}
                   </p>
+                  {course.path ? (
+                    <span className="w-fit rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
+                      {course.path.name}
+                    </span>
+                  ) : null}
                   <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                    <div className="h-full w-0 rounded-full bg-primary" />
+                    <div
+                      className="h-full rounded-full bg-primary"
+                      style={{ width: `${course.progressPercent}%` }}
+                    />
                   </div>
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">
-                      {totalSilabus(course)} silabus
+                      {course.silabusCount} silabus
                     </span>
                     <span className="font-semibold text-muted-foreground">
-                      Belum dimulai
+                      {course.progressPercent > 0
+                        ? `${course.progressPercent}% selesai`
+                        : "Belum dimulai"}
                     </span>
                   </div>
                 </CardContent>
@@ -177,6 +163,83 @@ export default function MyLearningPage() {
           ))}
         </div>
       ) : null}
+
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="flex flex-col gap-0.5">
+          <h2 className="font-heading text-[17px] font-bold">Path Belajar</h2>
+          <p className="text-[13px] text-muted-foreground">
+            Kamu bisa mengikuti lebih dari satu path. Path tambahan perlu persetujuan
+            admin/instruktur.
+          </p>
+        </div>
+
+        {pathsQuery.isLoading ? (
+          <Skeleton className="mt-4 h-24 w-full" />
+        ) : paths.length === 0 ? (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            Belum ada path yang dipublikasikan.
+          </p>
+        ) : (
+          <div className="mt-4 grid grid-cols-2 gap-3.5">
+            {paths.map((path) => {
+              const isPending = path.status === "PENDING";
+              const isApproved = path.status === "APPROVED";
+              const isBusy = requestPath.isPending && requestPath.variables?.pathId === path.id;
+
+              return (
+                <div
+                  key={path.id}
+                  className="flex items-center justify-between gap-4 rounded-xl border border-border p-4"
+                >
+                  <div className="flex flex-col gap-1">
+                    <span className="flex items-center gap-2 text-[14px] font-semibold">
+                      {path.name}
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                        {path.isFastTrack ? "Fast Track" : "Reguler"}
+                      </span>
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {path.courseCount} course
+                      {path.status ? ` · ${labelFor(path.status)}` : ""}
+                    </span>
+                  </div>
+
+                  {isApproved ? (
+                    <span className="flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                      <CheckCircle2 className="size-3.5" />
+                      Diikuti
+                    </span>
+                  ) : isPending ? (
+                    <span className="flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+                      <Lock className="size-3.5" />
+                      Menunggu approval
+                    </span>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant={path.status === "REJECTED" ? "outline" : "default"}
+                      disabled={isBusy}
+                      onClick={() => requestPath.mutate({ pathId: path.id })}
+                    >
+                      <Send className="size-3.5" />
+                      {path.status === "REJECTED" ? "Ajukan ulang" : "Ajukan akses"}
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
+}
+
+function labelFor(status: "PENDING" | "APPROVED" | "REJECTED") {
+  const map = {
+    PENDING: "menunggu approval",
+    APPROVED: "diikuti",
+    REJECTED: "ditolak",
+  } as const;
+  return map[status];
 }

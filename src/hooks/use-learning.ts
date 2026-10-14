@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { api, type ApiEnvelope } from "@/lib/api-client";
-import type { ContentBlock, Course, CoursePart, SilabusPart } from "@/types";
+import type { ContentBlock, Course, CoursePart, Path, SilabusPart, Tag } from "@/types";
 
 export type LearningBlock = ContentBlock & {
   attempt?: { id: string; score: number; passed: boolean } | null;
@@ -40,6 +40,8 @@ export type MyCourse = {
   progressPercent: number;
   silabusCount: number;
   durationMinutes: number;
+  path?: Path | null;
+  tags?: Tag[];
 };
 
 export type QuizPayload = {
@@ -88,6 +90,48 @@ export type QuizAttemptResult = {
   submittedAt: string;
   review: QuizReviewItem[];
 };
+
+export type LearningPath = {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  isFastTrack: boolean;
+  courseCount: number;
+  status: "PENDING" | "APPROVED" | "REJECTED" | null;
+  enrollmentId: string | null;
+  note: string | null;
+};
+
+export function useMyPaths() {
+  return useQuery({
+    queryKey: ["learning-paths"],
+    queryFn: async () => {
+      const { data } = await api.get<ApiEnvelope<LearningPath[]>>("/learning/paths");
+      return data.data;
+    },
+  });
+}
+
+export function useRequestPath() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: { pathId: string; note?: string }) => {
+      const { data } = await api.post<ApiEnvelope<unknown>>(
+        "/learning/paths/request",
+        payload,
+      );
+      return data.data;
+    },
+    onSuccess: () => {
+      toast.success("Pengajuan terkirim, menunggu approval admin/instruktur");
+      void queryClient.invalidateQueries({ queryKey: ["learning-paths"] });
+      void queryClient.invalidateQueries({ queryKey: ["learning-my-courses"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+}
 
 export function useLearningCourse(slug: string) {
   return useQuery({
