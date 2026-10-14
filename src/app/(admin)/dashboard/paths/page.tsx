@@ -22,17 +22,25 @@ import {
 import { api, type ApiEnvelope } from "@/lib/api-client";
 import type { Paginated, Path } from "@/types";
 
-const LEVEL_COLOR: Record<Path["level"], string> = {
-  BEGINNER: "text-success",
-  INTERMEDIATE: "text-info",
-  ADVANCED: "text-primary",
-};
-
 const STATUS_LABEL: Record<Path["status"], string> = {
   DRAFT: "Draft",
   PUBLISHED: "Published",
   ARCHIVED: "Archived",
 };
+
+function TrackBadge({ isFastTrack }: { isFastTrack: boolean }) {
+  return (
+    <span
+      className={
+        isFastTrack
+          ? "rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary"
+          : "rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground"
+      }
+    >
+      {isFastTrack ? "Fast Track" : "Reguler"}
+    </span>
+  );
+}
 
 export default function PathsPage() {
   const queryClient = useQueryClient();
@@ -116,7 +124,7 @@ export default function PathsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  {["PATH", "LEVEL", "COURSE", "STATUS"].map((head) => (
+                  {["PATH", "TIPE", "COURSE", "STATUS"].map((head) => (
                     <TableHead
                       key={head}
                       className="text-[11px] font-semibold tracking-wider text-muted-foreground"
@@ -135,10 +143,8 @@ export default function PathsPage() {
                     <TableCell className="text-[13px] font-medium">
                       {path.name}
                     </TableCell>
-                    <TableCell
-                      className={`text-[13px] font-medium ${LEVEL_COLOR[path.level]}`}
-                    >
-                      {path.level}
+                    <TableCell>
+                      <TrackBadge isFastTrack={path.isFastTrack} />
                     </TableCell>
                     <TableCell className="text-[13px] text-muted-foreground">
                       {path.courseCount ?? 0} course

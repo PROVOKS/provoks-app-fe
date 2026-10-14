@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -33,7 +34,7 @@ import type { Path } from "@/types";
 const schema = z.object({
   name: z.string().min(2, "Nama path minimal 2 karakter"),
   description: z.string().optional(),
-  level: z.enum(["BEGINNER", "INTERMEDIATE", "ADVANCED"]),
+  isFastTrack: z.boolean(),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
 });
 
@@ -42,7 +43,7 @@ type FormValues = z.infer<typeof schema>;
 const EMPTY: FormValues = {
   name: "",
   description: "",
-  level: "BEGINNER",
+  isFastTrack: false,
   status: "DRAFT",
 };
 
@@ -70,7 +71,7 @@ export function PathFormDialog({
         ? {
             name: path.name,
             description: path.description ?? "",
-            level: path.level,
+            isFastTrack: path.isFastTrack,
             status: path.status,
           }
         : EMPTY,
@@ -133,44 +134,36 @@ export function PathFormDialog({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-2">
-              <Label>Level</Label>
-              <Select
-                value={form.watch("level")}
-                onValueChange={(value) =>
-                  form.setValue("level", value as FormValues["level"])
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="BEGINNER">Beginner</SelectItem>
-                  <SelectItem value="INTERMEDIATE">Intermediate</SelectItem>
-                  <SelectItem value="ADVANCED">Advanced</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-border p-3.5">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[13px] font-medium">Fast Track</span>
+              <span className="text-xs text-muted-foreground">
+                Path intensif. Kalau mati = Reguler.
+              </span>
             </div>
+            <Switch
+              checked={form.watch("isFastTrack")}
+              onCheckedChange={(checked) => form.setValue("isFastTrack", checked)}
+            />
+          </div>
 
-            <div className="flex flex-col gap-2">
-              <Label>Status</Label>
-              <Select
-                value={form.watch("status")}
-                onValueChange={(value) =>
-                  form.setValue("status", value as FormValues["status"])
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="DRAFT">Draft</SelectItem>
-                  <SelectItem value="PUBLISHED">Published</SelectItem>
-                  <SelectItem value="ARCHIVED">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex flex-col gap-2">
+            <Label>Status</Label>
+            <Select
+              value={form.watch("status")}
+              onValueChange={(value) =>
+                form.setValue("status", value as FormValues["status"])
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="DRAFT">Draft</SelectItem>
+                <SelectItem value="PUBLISHED">Published</SelectItem>
+                <SelectItem value="ARCHIVED">Archived</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </form>
 

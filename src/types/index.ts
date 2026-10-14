@@ -16,7 +16,8 @@ export type Path = {
   name: string;
   slug: string;
   description?: string | null;
-  level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
+  /** false = Reguler, true = Fast Track */
+  isFastTrack: boolean;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   courseCount?: number;
   createdAt: string;
