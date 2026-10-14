@@ -80,8 +80,14 @@ function blockPreview(block: ContentBlock) {
   switch (block.type) {
     case "HEADING":
       return text("text") || "Judul bagian";
-    case "PARAGRAPH":
-      return text("text").slice(0, 90) || "Paragraf materi";
+    case "PARAGRAPH": {
+      const html = String(content.html ?? "");
+      const text = String(content.text ?? "");
+      const plain = html
+        ? html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
+        : text;
+      return plain.slice(0, 90) || "Paragraf materi";
+    }
     case "IMAGE":
       return text("caption") || text("url") || "Gambar pendukung";
     case "DIVIDER":

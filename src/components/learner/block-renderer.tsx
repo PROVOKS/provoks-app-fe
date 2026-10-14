@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { highlightCode, languageLabel } from "@/lib/highlight";
 import type { ContentBlock } from "@/types";
 
 function str(content: Record<string, unknown>, key: string) {
@@ -68,12 +69,23 @@ export function BlockRenderer({ block }: { block: ContentBlock }) {
       );
     }
 
-    case "PARAGRAPH":
+    case "PARAGRAPH": {
+      const html = str(content, "html");
+      const text = str(content, "text");
+      if (html) {
+        return (
+          <div
+            className="rich-text"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        );
+      }
       return (
         <p className="text-sm/6 whitespace-pre-line text-muted-foreground">
-          {str(content, "text")}
+          {text}
         </p>
       );
+    }
 
     case "IMAGE": {
       const url = str(content, "url");
@@ -144,10 +156,15 @@ export function BlockRenderer({ block }: { block: ContentBlock }) {
       return (
         <div className="flex flex-col gap-2">
           <span className="font-mono text-xs text-muted-foreground">
-            {str(content, "language") || "code"}
+            {languageLabel(str(content, "language"))}
           </span>
           <pre className="overflow-x-auto rounded-xl bg-muted p-4 font-mono text-[13px] leading-5">
-            <code>{str(content, "code")}</code>
+            <code
+              className="hljs"
+              dangerouslySetInnerHTML={{
+                __html: highlightCode(str(content, "code"), str(content, "language")),
+              }}
+            />
           </pre>
         </div>
       );

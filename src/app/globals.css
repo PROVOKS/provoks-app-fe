@@ -192,3 +192,174 @@
     @apply font-heading;
   }
 }
+
+/* ============================================================
+   Rich text (paragraph block) & Tiptap editor
+   ============================================================ */
+.rich-text {
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--muted-foreground);
+}
+.rich-text p {
+  margin: 0 0 0.75rem;
+}
+.rich-text p:last-child {
+  margin-bottom: 0;
+}
+.rich-text strong {
+  font-weight: 600;
+  color: var(--foreground);
+}
+.rich-text em {
+  font-style: italic;
+}
+.rich-text s {
+  text-decoration: line-through;
+}
+.rich-text h1,
+.rich-text h2,
+.rich-text h3 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 1.25rem 0 0.5rem;
+}
+.rich-text h1 {
+  font-size: 1.25rem;
+}
+.rich-text h2 {
+  font-size: 1.1rem;
+}
+.rich-text h3 {
+  font-size: 1rem;
+}
+.rich-text ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+  margin: 0 0 0.75rem;
+}
+.rich-text ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+  margin: 0 0 0.75rem;
+}
+.rich-text a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+.rich-text blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 0.75rem;
+  font-style: italic;
+  margin: 0 0 0.75rem;
+}
+.rich-text code {
+  background: var(--muted);
+  border-radius: 4px;
+  padding: 0.1rem 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--foreground);
+}
+
+/* area editor Tiptap */
+.tiptap-editor {
+  min-height: 8rem;
+  outline: none;
+}
+.tiptap-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--muted-foreground);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* ============================================================
+   Syntax highlighting (highlight.js) — memakai warna brand
+   ============================================================ */
+:root {
+  --code-keyword: #c23c11;
+  --code-string: #2e7d32;
+  --code-number: #b26a00;
+  --code-function: #2f6fed;
+  --code-tag: #a87642;
+  --code-comment: #8f8273;
+  --code-attr: #6f6455;
+}
+.dark {
+  --code-keyword: #ff8a5c;
+  --code-string: #7ddb8a;
+  --code-number: #e0a13c;
+  --code-function: #7aa5f5;
+  --code-tag: #d6ccbe;
+  --code-comment: #b5a899;
+  --code-attr: #b5a899;
+}
+
+.hljs {
+  color: var(--foreground);
+  background: transparent;
+}
+.hljs-comment,
+.hljs-quote {
+  color: var(--code-comment);
+  font-style: italic;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-section,
+.hljs-doctag,
+.hljs-type,
+.hljs-name,
+.hljs-strong {
+  color: var(--code-keyword);
+  font-weight: 600;
+}
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-meta .hljs-string {
+  color: var(--code-string);
+}
+.hljs-number,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link,
+.hljs-selector-attr,
+.hljs-selector-pseudo {
+  color: var(--code-number);
+}
+.hljs-title,
+.hljs-title.function_,
+.hljs-title.class_,
+.hljs-built_in,
+.hljs-variable,
+.hljs-template-variable {
+  color: var(--code-function);
+}
+.hljs-attr,
+.hljs-attribute,
+.hljs-property {
+  color: var(--code-attr);
+}
+.hljs-tag,
+.hljs-selector,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: var(--code-tag);
+}
+.hljs-meta {
+  color: var(--code-comment);
+}
+.hljs-meta .hljs-keyword {
+  color: var(--code-keyword);
+}
+.hljs-deletion {
+  color: var(--destructive);
+}
+.hljs-emphasis {
+  font-style: italic;
+}

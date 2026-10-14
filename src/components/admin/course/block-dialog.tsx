@@ -22,6 +22,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/admin/course/rich-text-editor";
+import { CODE_LANGUAGES, highlightCode } from "@/lib/highlight";
 import type { BlockType, ContentBlock } from "@/types";
 
 export const BLOCK_TYPES: { value: BlockType; label: string; hint: string }[] = [
@@ -42,7 +44,7 @@ function defaultsFor(type: BlockType): Content {
     case "HEADING":
       return { level: 2, text: "" };
     case "PARAGRAPH":
-      return { text: "" };
+      return { html: "" };
     case "IMAGE":
       return { url: "", alt: "", caption: "" };
     case "DIVIDER":
@@ -99,6 +101,23 @@ export function BlockDialog({
 
   const str = (key: string) => String(content[key] ?? "");
 
+  function escapeHtml(value: string) {
+    return value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  /** dukung data lama yang masih memakai { text } */
+  const paragraphHtml =
+    str("html") || (str("text") ? `<p>${escapeHtml(str("text"))}</p>` : "");
+
+  function submit() {
+    const normalized =
+      type === "PARAGRAPH" ? { html: String(content.html ?? "") } : content;
+    onSubmit({ type, content: normalized });
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
@@ -115,7 +134,7 @@ export function BlockDialog({
           id="block-form"
           onSubmit={(event) => {
             event.preventDefault();
-            onSubmit({ type, content });
+            submit();
           }}
           className="flex flex-col gap-4"
         >
@@ -170,13 +189,10 @@ export function BlockDialog({
 
           {type === "PARAGRAPH" ? (
             <div className="flex flex-col gap-2">
-              <Label htmlFor="block-paragraph">Teks</Label>
-              <Textarea
-                id="block-paragraph"
-                rows={5}
-                placeholder="Tulis paragraf materi..."
-                value={str("text")}
-                onChange={(event) => set("text", event.target.value)}
+              <Label>Teks (rich text)</Label>
+              <RichTextEditor
+                value={paragraphHtml}
+                onChange={(html) => set("html", html)}
               />
             </div>
           ) : null}
@@ -258,24 +274,46 @@ export function BlockDialog({
           {type === "CODE" ? (
             <>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="block-language">Bahasa</Label>
-                <Input
-                  id="block-language"
-                  placeholder="javascript"
-                  value={str("language")}
-                  onChange={(event) => set("language", event.target.value)}
-                />
+                <Label>Bahasa</Label>
+                <Select
+                  value={str("language") || "javascript"}
+                  onValueChange={(value) => set("language", value)}
+                >
+                  <SelectTrigger className="w-56">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CODE_LANGUAGES.map((language) => (
+                      <SelectItem key={language.value} value={language.value}>
+                        {language.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+
               <div className="flex flex-col gap-2">
                 <Label htmlFor="block-code">Kode</Label>
                 <Textarea
                   id="block-code"
-                  rows={5}
+                  rows={7}
                   className="font-mono text-[13px]"
                   placeholder="const element = <h1>Hello, world!</h1>;"
                   value={str("code")}
                   onChange={(event) => set("code", event.target.value)}
                 />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label>Preview</Label>
+                <pre className="overflow-x-auto rounded-xl bg-muted p-4 font-mono text-[13px] leading-5">
+                  <code
+                    className="hljs"
+                    dangerouslySetInnerHTML={{
+                      __html: highlightCode(str("code"), str("language")),
+                    }}
+                  />
+                </pre>
               </div>
             </>
           ) : null}
