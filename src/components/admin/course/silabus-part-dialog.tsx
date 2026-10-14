@@ -160,25 +160,6 @@ export function SilabusPartDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
-              <Label>Tipe</Label>
-              <Select
-                value={form.watch("type")}
-                onValueChange={(value) =>
-                  form.setValue("type", value as SilabusPartValues["type"])
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="VIDEO">Video</SelectItem>
-                  <SelectItem value="ARTICLE">Artikel</SelectItem>
-                  <SelectItem value="QUIZ">Kuis</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex flex-col gap-2">
               <Label>Status</Label>
               <Select
                 value={form.watch("status")}
@@ -196,17 +177,16 @@ export function SilabusPartDialog({
                 </SelectContent>
               </Select>
             </div>
-          </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="silabus-duration">Durasi (menit)</Label>
-            <Input
-              id="silabus-duration"
-              type="number"
-              min={0}
-              className="w-40"
-              {...form.register("durationMinutes", { valueAsNumber: true })}
-            />
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="silabus-duration">Durasi (menit)</Label>
+              <Input
+                id="silabus-duration"
+                type="number"
+                min={0}
+                {...form.register("durationMinutes", { valueAsNumber: true })}
+              />
+            </div>
           </div>
         </form>
         </div>
