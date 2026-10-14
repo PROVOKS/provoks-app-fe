@@ -25,7 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/admin/course/rich-text-editor";
 import { CodeBlock } from "@/components/shared/code-block";
 import { FileUpload } from "@/components/shared/file-upload";
-import { PdfViewer, SlidesViewer } from "@/components/shared/file-viewer";
+import { PdfViewer, SlidesViewer, FileCard } from "@/components/shared/file-viewer";
 import { CODE_LANGUAGES } from "@/lib/highlight";
 import type { BlockType, ContentBlock } from "@/types";
 
@@ -40,6 +40,7 @@ export const BLOCK_TYPES: { value: BlockType; label: string; hint: string }[] = 
   { value: "QUIZ", label: "Quiz", hint: "Buat sendiri atau import JSON" },
   { value: "PDF", label: "PDF", hint: "Dokumen PDF" },
   { value: "SLIDES", label: "PowerPoint", hint: "Slide presentasi" },
+  { value: "FILE", label: "File", hint: "Lampiran apa pun (ZIP, DOCX, ...)" },
 ];
 
 type Content = Record<string, unknown>;
@@ -64,6 +65,7 @@ function defaultsFor(type: BlockType): Content {
       return { title: "" };
     case "PDF":
     case "SLIDES":
+    case "FILE":
       return { url: "", title: "" };
     default:
       return {};
@@ -361,14 +363,22 @@ export function BlockDialog({
             </>
           ) : null}
 
-          {type === "PDF" || type === "SLIDES" ? (
+          {type === "PDF" || type === "SLIDES" || type === "FILE" ? (
             <>
               <FileUpload
-                accept={type === "PDF" ? "application/pdf" : ".ppt,.pptx"}
+                accept={
+                  type === "PDF"
+                    ? "application/pdf"
+                    : type === "SLIDES"
+                      ? ".ppt,.pptx"
+                      : undefined
+                }
                 hint={
                   type === "PDF"
                     ? "Dokumen PDF — maksimal 25MB"
-                    : "PowerPoint (.ppt / .pptx) — maksimal 25MB"
+                    : type === "SLIDES"
+                      ? "PowerPoint (.ppt / .pptx) — maksimal 25MB"
+                      : "Lampiran apa pun (ZIP, DOCX, XLS, ...) — maksimal 25MB"
                 }
                 onUploaded={(file) => set("url", file.url)}
               />
@@ -411,8 +421,10 @@ export function BlockDialog({
                 <Label>Preview</Label>
                 {type === "PDF" ? (
                   <PdfViewer url={str("url")} title={str("title")} />
-                ) : (
+                ) : type === "SLIDES" ? (
                   <SlidesViewer url={str("url")} title={str("title")} />
+                ) : (
+                  <FileCard url={str("url")} title={str("title")} />
                 )}
               </div>
             </>

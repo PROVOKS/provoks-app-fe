@@ -24,6 +24,7 @@ import {
   List,
   Loader2,
   Minus,
+  Paperclip,
   Pencil,
   Play,
   Plus,
@@ -71,6 +72,7 @@ const BLOCK_ICON: Record<BlockType, React.ComponentType<{ className?: string }>>
   QUIZ: CheckCircle2,
   PDF: FileText,
   SLIDES: Presentation,
+  FILE: Paperclip,
 };
 
 const BLOCK_LABEL: Record<BlockType, string> = Object.fromEntries(
@@ -106,6 +108,8 @@ function blockPreview(block: ContentBlock) {
     case "PDF":
     case "SLIDES":
       return text("title") || text("url") || "Dokumen";
+    case "FILE":
+      return text("title") || text("url") || "Lampiran";
     default:
       return "";
   }

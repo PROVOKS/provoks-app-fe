@@ -80,7 +80,8 @@ export type BlockType =
   | "CALLOUT"
   | "QUIZ"
   | "PDF"
-  | "SLIDES";
+  | "SLIDES"
+  | "FILE";
 
 export type ContentBlock = {
   id: string;

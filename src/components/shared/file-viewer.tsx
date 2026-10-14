@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, ExternalLink, FileText, Presentation } from "lucide-react";
+import { Download, ExternalLink, FileText, Paperclip, Presentation } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -62,6 +62,46 @@ function isPublicUrl(url: string) {
   } catch {
     return false;
   }
+}
+
+/** Kartu lampiran generik (unduh) */
+export function FileCard({
+  url,
+  title,
+  className,
+}: {
+  url: string;
+  title?: string;
+  className?: string;
+}) {
+  if (!url) return <EmptyState label="Lampiran" />;
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className={cn(
+        "flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40",
+        className,
+      )}
+    >
+      <span className="flex min-w-0 items-center gap-3">
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted">
+          <Paperclip className="size-4 text-muted-foreground" />
+        </span>
+        <span className="flex min-w-0 flex-col">
+          <span className="truncate text-[13px] font-semibold">
+            {title || "Lampiran"}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            Klik untuk membuka / mengunduh
+          </span>
+        </span>
+      </span>
+      <Download className="size-4 shrink-0 text-muted-foreground" />
+    </a>
+  );
 }
 
 /** PDF viewer (viewer bawaan browser) */
