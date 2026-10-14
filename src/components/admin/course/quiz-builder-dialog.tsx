@@ -191,7 +191,7 @@ export function QuizBuilderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90vh] flex-col gap-4 overflow-hidden sm:max-w-[680px]">
+      <DialogContent className="max-h-[90vh] grid-rows-[auto_minmax(0,1fr)_auto] gap-4 sm:max-w-[680px]">
         <DialogHeader>
           <DialogTitle className="font-heading text-lg">
             Quiz Builder
@@ -201,7 +201,7 @@ export function QuizBuilderDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1">
+        <div className="-mx-1 min-h-0 overflow-y-auto px-1">
         <Tabs defaultValue="manual">
           <TabsList className="w-full">
             <TabsTrigger value="manual" className="flex-1 gap-2">
