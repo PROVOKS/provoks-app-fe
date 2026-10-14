@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -20,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { api, type ApiEnvelope } from "@/lib/api-client";
-import type { Course } from "@/types";
+import type { Course, Paginated, Path } from "@/types";
 
 const schema = z.object({
   title: z.string().min(3, "Nama course wajib diisi (min. 3 karakter)"),
@@ -33,6 +34,17 @@ type FormValues = z.infer<typeof schema>;
 
 export default function NewCoursePage() {
   const router = useRouter();
+
+  // Path diambil dari data asli (bukan daftar statis)
+  const { data: paths, isLoading: pathsLoading } = useQuery({
+    queryKey: ["paths", "options"],
+    queryFn: async () => {
+      const { data } = await api.get<ApiEnvelope<Paginated<Path>>>("/paths", {
+        params: { perPage: 100 },
+      });
+      return data.data.items;
+    },
+  });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -123,19 +135,36 @@ export default function NewCoursePage() {
                   </Label>
                   <Select
                     value={form.watch("pathId")}
+                    disabled={pathsLoading}
                     onValueChange={(value) =>
                       form.setValue("pathId", value, { shouldValidate: true })
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Pilih path..." />
+                      <SelectValue
+                        placeholder={pathsLoading ? "Memuat path..." : "Pilih path..."}
+                      />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="frontend">Frontend Development</SelectItem>
-                      <SelectItem value="backend">Backend Development</SelectItem>
-                      <SelectItem value="fullstack">Full-Stack Development</SelectItem>
+                      {(paths ?? []).map((path) => (
+                        <SelectItem key={path.id} value={path.id}>
+                          {path.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
+                  {!pathsLoading && (paths?.length ?? 0) === 0 ? (
+                    <p className="text-xs text-muted-foreground">
+                      Belum ada path.{" "}
+                      <Link
+                        href="/dashboard/paths"
+                        className="font-semibold text-primary hover:underline"
+                      >
+                        Tambah path dulu
+                      </Link>
+                      .
+                    </p>
+                  ) : null}
                   {form.formState.errors.pathId ? (
                     <p className="text-xs text-destructive">
                       {form.formState.errors.pathId.message}

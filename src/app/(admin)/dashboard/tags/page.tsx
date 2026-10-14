@@ -10,6 +10,7 @@ import { RowActions } from "@/components/admin/row-actions";
 import { TagFormDialog } from "@/components/admin/tag-form-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DataTablePagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -27,11 +28,15 @@ export default function TagsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Tag | null>(null);
   const [deleting, setDeleting] = useState<Tag | null>(null);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["tags"],
+    queryKey: ["tags", page, perPage],
     queryFn: async () => {
-      const { data } = await api.get<ApiEnvelope<Paginated<Tag>>>("/tags");
+      const { data } = await api.get<ApiEnvelope<Paginated<Tag>>>("/tags", {
+        params: { page, perPage },
+      });
       return data.data;
     },
   });
@@ -147,6 +152,18 @@ export default function TagsPage() {
             </Table>
           )}
         </div>
+
+        {!isLoading && !isError && data ? (
+          <DataTablePagination
+            meta={data.meta}
+            itemLabel="tag"
+            onPageChange={setPage}
+            onPerPageChange={(value) => {
+              setPerPage(value);
+              setPage(1);
+            }}
+          />
+        ) : null}
       </div>
 
       <TagFormDialog open={formOpen} onOpenChange={setFormOpen} tag={editing} />

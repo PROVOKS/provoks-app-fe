@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Upload } from "lucide-react";
+import { Plus, Search, Upload } from "lucide-react";
 
 import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
 import { RowActions } from "@/components/admin/row-actions";
@@ -11,6 +11,7 @@ import { UserImportDialog } from "@/components/admin/user-import-dialog";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DataTablePagination } from "@/components/ui/pagination";
 import {
   Select,
   SelectContent,
@@ -50,14 +51,35 @@ export default function UsersPage() {
   const [role, setRole] = useState<Role | "ALL">("ALL");
   const [pathId, setPathId] = useState<string>("ALL");
   const [importOpen, setImportOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ManagedUser | null>(null);
   const [deleting, setDeleting] = useState<ManagedUser | null>(null);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
 
   const { data, isLoading, isError } = useUsers({
     search: search || undefined,
     role,
     pathId: pathId === "ALL" ? undefined : pathId,
+    page,
+    perPage,
   });
+
+  // filter berubah -> kembali ke halaman pertama
+  function changeSearch(value: string) {
+    setSearch(value);
+    setPage(1);
+  }
+
+  function changeRole(value: Role | "ALL") {
+    setRole(value);
+    setPage(1);
+  }
+
+  function changePath(value: string) {
+    setPathId(value);
+    setPage(1);
+  }
   const { data: pathData } = useQuery({
     queryKey: ["paths", "options"],
     queryFn: async () => {
@@ -92,11 +114,11 @@ export default function UsersPage() {
                 placeholder="Cari nama, NIM, atau email..."
                 className="h-9 pl-10"
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => changeSearch(event.target.value)}
               />
             </div>
 
-            <Select value={role} onValueChange={(value) => setRole(value as Role | "ALL")}>
+            <Select value={role} onValueChange={(value) => changeRole(value as Role | "ALL")}>
               <SelectTrigger className="h-9 w-[150px]">
                 <SelectValue />
               </SelectTrigger>
@@ -108,7 +130,7 @@ export default function UsersPage() {
               </SelectContent>
             </Select>
 
-            <Select value={pathId} onValueChange={setPathId}>
+            <Select value={pathId} onValueChange={changePath}>
               <SelectTrigger className="h-9 w-[190px]">
                 <SelectValue placeholder="Semua path" />
               </SelectTrigger>
@@ -123,17 +145,25 @@ export default function UsersPage() {
             </Select>
           </div>
 
-          <Button size="sm" onClick={() => setImportOpen(true)}>
-            <Upload className="size-4" />
-            Import CSV
-          </Button>
+          <div className="flex items-center gap-2.5">
+            <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+              <Upload className="size-4" />
+              Import CSV
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                setEditing(null);
+                setFormOpen(true);
+              }}
+            >
+              <Plus className="size-4" />
+              Tambah User
+            </Button>
+          </div>
         </div>
 
-        <p className="mt-3 text-xs text-muted-foreground">
-          Total {data?.meta.total ?? 0} user
-        </p>
-
-        <div className="mt-2">
+        <div className="mt-4">
           {isLoading ? (
             <Skeleton className="h-40 w-full" />
           ) : isError ? (
@@ -205,7 +235,10 @@ export default function UsersPage() {
                     <TableCell>
                       <RowActions
                         label={`Aksi ${item.name}`}
-                        onEdit={() => setEditing(item)}
+                        onEdit={() => {
+                          setEditing(item);
+                          setFormOpen(true);
+                        }}
                         onDelete={canDelete ? () => setDeleting(item) : undefined}
                       />
                     </TableCell>
@@ -215,14 +248,28 @@ export default function UsersPage() {
             </Table>
           )}
         </div>
+
+        {!isLoading && !isError && data ? (
+          <DataTablePagination
+            meta={data.meta}
+            itemLabel="user"
+            onPageChange={setPage}
+            onPerPageChange={(value) => {
+              setPerPage(value);
+              setPage(1);
+            }}
+          />
+        ) : null}
       </div>
 
       <UserFormDialog
-        open={Boolean(editing)}
+        open={formOpen}
         onOpenChange={(open) => {
+          setFormOpen(open);
           if (!open) setEditing(null);
         }}
         user={editing}
+        paths={pathData ?? []}
       />
 
       <UserImportDialog open={importOpen} onOpenChange={setImportOpen} />

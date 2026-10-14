@@ -17,6 +17,7 @@ export type UserFilters = {
   role?: Role | "ALL";
   pathId?: string;
   page?: number;
+  perPage?: number;
 };
 
 export type ImportRow = {
@@ -68,11 +69,35 @@ export function useUsers(filters: UserFilters) {
           role: filters.role && filters.role !== "ALL" ? filters.role : undefined,
           pathId: filters.pathId || undefined,
           page: filters.page,
-          perPage: 20,
+          perPage: filters.perPage ?? 20,
         },
       });
       return data.data;
     },
+  });
+}
+
+export function useCreateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: {
+      name: string;
+      email: string;
+      role: Role;
+      nim?: string;
+      prodi?: string;
+      password?: string;
+      pathId?: string;
+    }) => {
+      const { data } = await api.post<ApiEnvelope<ManagedUser>>("/users", payload);
+      return data.data;
+    },
+    onSuccess: (user) => {
+      toast.success(`User "${user.name}" ditambahkan`);
+      void queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
   });
 }
 
@@ -152,13 +177,17 @@ export function useImportStudents() {
   });
 }
 
-export function usePathRequests(status: PathEnrollmentStatus | "ALL" = "PENDING") {
+export function usePathRequests(
+  status: PathEnrollmentStatus | "ALL" = "PENDING",
+  page = 1,
+  perPage = 20,
+) {
   return useQuery({
-    queryKey: ["path-requests", status],
+    queryKey: ["path-requests", status, page, perPage],
     queryFn: async () => {
       const { data } = await api.get<ApiEnvelope<Paginated<PathRequest>>>(
         "/users/path-requests",
-        { params: { status, perPage: 50 } },
+        { params: { status, page, perPage } },
       );
       return data.data;
     },

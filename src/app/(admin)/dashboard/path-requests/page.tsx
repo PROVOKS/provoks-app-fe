@@ -5,6 +5,7 @@ import { Check, Loader2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DataTablePagination } from "@/components/ui/pagination";
 import {
   Table,
   TableBody,
@@ -46,7 +47,9 @@ function StatusChip({ status }: { status: PathEnrollmentStatus }) {
 
 export default function PathRequestsPage() {
   const [status, setStatus] = useState<PathEnrollmentStatus>("PENDING");
-  const { data, isLoading, isError } = usePathRequests(status);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
+  const { data, isLoading, isError } = usePathRequests(status, page, perPage);
   const review = useReviewPathRequest();
 
   const requests = data?.items ?? [];
@@ -64,7 +67,13 @@ export default function PathRequestsPage() {
       </div>
 
       <div className="rounded-[20px] border border-border bg-card p-6">
-        <Tabs value={status} onValueChange={(value) => setStatus(value as PathEnrollmentStatus)}>
+        <Tabs
+          value={status}
+          onValueChange={(value) => {
+            setStatus(value as PathEnrollmentStatus);
+            setPage(1);
+          }}
+        >
           <TabsList>
             {TABS.map((tab) => (
               <TabsTrigger key={tab.value} value={tab.value}>
@@ -164,6 +173,18 @@ export default function PathRequestsPage() {
             </Table>
           )}
         </div>
+
+        {!isLoading && !isError && data ? (
+          <DataTablePagination
+            meta={data.meta}
+            itemLabel="permintaan"
+            onPageChange={setPage}
+            onPerPageChange={(value) => {
+              setPerPage(value);
+              setPage(1);
+            }}
+          />
+        ) : null}
       </div>
     </div>
   );

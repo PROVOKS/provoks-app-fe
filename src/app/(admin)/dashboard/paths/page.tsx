@@ -10,6 +10,7 @@ import { PathFormDialog } from "@/components/admin/path-form-dialog";
 import { RowActions } from "@/components/admin/row-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DataTablePagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -47,11 +48,15 @@ export default function PathsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Path | null>(null);
   const [deleting, setDeleting] = useState<Path | null>(null);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["paths"],
+    queryKey: ["paths", page, perPage],
     queryFn: async () => {
-      const { data } = await api.get<ApiEnvelope<Paginated<Path>>>("/paths");
+      const { data } = await api.get<ApiEnvelope<Paginated<Path>>>("/paths", {
+        params: { page, perPage },
+      });
       return data.data;
     },
   });
@@ -165,6 +170,18 @@ export default function PathsPage() {
             </Table>
           )}
         </div>
+
+        {!isLoading && !isError && data ? (
+          <DataTablePagination
+            meta={data.meta}
+            itemLabel="path"
+            onPageChange={setPage}
+            onPerPageChange={(value) => {
+              setPerPage(value);
+              setPage(1);
+            }}
+          />
+        ) : null}
       </div>
 
       <PathFormDialog open={formOpen} onOpenChange={setFormOpen} path={editing} />

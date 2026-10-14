@@ -12,6 +12,7 @@ import { RowActions } from "@/components/admin/row-actions";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { DataTablePagination } from "@/components/ui/pagination";
 import {
   Select,
   SelectContent,
@@ -57,13 +58,15 @@ export default function CoursesPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [deleting, setDeleting] = useState<Course | null>(null);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["courses"],
+    queryKey: ["courses", page, perPage],
     queryFn: async () => {
       const { data } = await api.get<ApiEnvelope<Paginated<Course>>>(
         "/courses",
-        { params: { page: 1, perPage: 20 } },
+        { params: { page, perPage } },
       );
       return data.data;
     },
@@ -206,6 +209,18 @@ export default function CoursesPage() {
             </Table>
           )}
         </div>
+
+        {!isLoading && !isError && data ? (
+          <DataTablePagination
+            meta={data.meta}
+            itemLabel="course"
+            onPageChange={setPage}
+            onPerPageChange={(value) => {
+              setPerPage(value);
+              setPage(1);
+            }}
+          />
+        ) : null}
       </div>
 
       <ConfirmDeleteDialog
