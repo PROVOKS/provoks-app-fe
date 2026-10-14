@@ -42,6 +42,7 @@ export type Course = {
   path?: Path | null;
   tags?: Tag[];
   studentCount?: number;
+  parts?: CoursePart[];
   createdAt: string;
 };
 
@@ -86,6 +87,7 @@ export type ContentBlock = {
   order: number;
   /** payload fleksibel per tipe block */
   content: Record<string, unknown>;
+  questions?: QuizQuestion[];
 };
 
 export type QuizQuestion = {
