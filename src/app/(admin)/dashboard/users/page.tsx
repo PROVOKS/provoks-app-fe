@@ -59,9 +59,11 @@ export default function UsersPage() {
     pathId: pathId === "ALL" ? undefined : pathId,
   });
   const { data: pathData } = useQuery({
-    queryKey: ["paths"],
+    queryKey: ["paths", "options"],
     queryFn: async () => {
-      const { data } = await api.get<ApiEnvelope<Paginated<Path>>>("/paths");
+      const { data } = await api.get<ApiEnvelope<Paginated<Path>>>("/paths", {
+        params: { perPage: 100 },
+      });
       return data.data.items;
     },
   });
