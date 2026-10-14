@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -30,7 +30,7 @@ export type CoursePartValues = z.infer<typeof schema>;
 
 const EMPTY: CoursePartValues = { name: "", description: "", durationMinutes: 0 };
 
-export function CoursePartDialog({
+export const CoursePartDialog = memo(function CoursePartDialog({
   open,
   onOpenChange,
   part,
@@ -133,4 +133,4 @@ export function CoursePartDialog({
       </DialogContent>
     </Dialog>
   );
-}
+});

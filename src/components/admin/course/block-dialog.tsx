@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -72,7 +72,7 @@ function defaultsFor(type: BlockType): Content {
   }
 }
 
-export function BlockDialog({
+export const BlockDialog = memo(function BlockDialog({
   open,
   onOpenChange,
   block,
@@ -468,4 +468,4 @@ export function BlockDialog({
       </DialogContent>
     </Dialog>
   );
-}
+});

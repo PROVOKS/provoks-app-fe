@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -46,7 +46,7 @@ const EMPTY: SilabusPartValues = {
   status: "DRAFT",
 };
 
-export function SilabusPartDialog({
+export const SilabusPartDialog = memo(function SilabusPartDialog({
   open,
   onOpenChange,
   silabusPart,
@@ -203,4 +203,4 @@ export function SilabusPartDialog({
       </DialogContent>
     </Dialog>
   );
-}
+});

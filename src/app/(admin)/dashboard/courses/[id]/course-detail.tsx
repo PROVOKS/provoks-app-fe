@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -40,10 +40,19 @@ import {
 
 import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
 import { BlockDialog, BLOCK_TYPES } from "@/components/admin/course/block-dialog";
-import { CoursePartDialog } from "@/components/admin/course/course-part-dialog";
-import { CourseSettingsDialog } from "@/components/admin/course/course-settings-dialog";
+import {
+  CoursePartDialog,
+  type CoursePartValues,
+} from "@/components/admin/course/course-part-dialog";
+import {
+  CourseSettingsDialog,
+  type CourseSettingsValues,
+} from "@/components/admin/course/course-settings-dialog";
 import { QuizBuilderDialog } from "@/components/admin/course/quiz-builder-dialog";
-import { SilabusPartDialog } from "@/components/admin/course/silabus-part-dialog";
+import {
+  SilabusPartDialog,
+  type SilabusPartValues,
+} from "@/components/admin/course/silabus-part-dialog";
 import { SortableItem, StructureTree } from "@/components/admin/course/structure-tree";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -179,6 +188,123 @@ export function CourseDetail({ courseId }: { courseId: string }) {
     }
   }, [activeSilabus]);
 
+  const blocks = useMemo(() => activeSilabus?.blocks ?? [], [activeSilabus]);
+
+  // Nilai terbaru dibaca lewat ref supaya callback di bawah tidak berubah
+  // identitasnya setiap kali silabus part dipilih (dialog jadi tidak re-render).
+  const latest = useRef({ activeSilabus, blocks });
+  latest.current = { activeSilabus, blocks };
+
+  const updateCourseMutate = mutations.updateCourse.mutate;
+  const createPartMutate = mutations.createPart.mutate;
+  const updatePartMutate = mutations.updatePart.mutate;
+  const createSilabusMutate = mutations.createSilabus.mutate;
+  const updateSilabusMutate = mutations.updateSilabus.mutate;
+  const createBlockMutate = mutations.createBlock.mutate;
+  const updateBlockMutate = mutations.updateBlock.mutate;
+  const createQuestionMutate = mutations.createQuestion.mutate;
+  const updateQuestionMutate = mutations.updateQuestion.mutate;
+  const deleteQuestionMutate = mutations.deleteQuestion.mutate;
+  const importQuizMutate = mutations.importQuiz.mutate;
+
+  const handleSettingsSubmit = useCallback(
+    (values: CourseSettingsValues) => {
+      updateCourseMutate(
+        {
+          title: values.title,
+          description: values.description,
+          status: values.status,
+          passingGrade: values.passingGrade,
+          pathId: values.pathId || null,
+          tagIds: values.tagIds,
+        },
+        { onSuccess: () => setSettingsOpen(false) },
+      );
+    },
+    [updateCourseMutate],
+  );
+
+  const handlePartSubmit = useCallback(
+    (values: CoursePartValues) => {
+      if (editingPart) {
+        updatePartMutate(
+          { id: editingPart.id, ...values },
+          { onSuccess: () => setPartOpen(false) },
+        );
+      } else {
+        createPartMutate(values, { onSuccess: () => setPartOpen(false) });
+      }
+    },
+    [editingPart, createPartMutate, updatePartMutate],
+  );
+
+  const handleSilabusSubmit = useCallback(
+    (values: SilabusPartValues) => {
+      if (editingSilabus) {
+        updateSilabusMutate(
+          { id: editingSilabus.id, ...values },
+          { onSuccess: () => setSilabusOpen(false) },
+        );
+      } else {
+        createSilabusMutate(values, { onSuccess: () => setSilabusOpen(false) });
+      }
+    },
+    [editingSilabus, createSilabusMutate, updateSilabusMutate],
+  );
+
+  const handleBlockSubmit = useCallback(
+    ({ type, content }: { type: BlockType; content: Record<string, unknown> }) => {
+      const current = latest.current.activeSilabus;
+      if (editingBlock) {
+        updateBlockMutate(
+          { id: editingBlock.id, type, content },
+          { onSuccess: () => setBlockOpen(false) },
+        );
+      } else if (current) {
+        createBlockMutate(
+          {
+            silabusPartId: current.id,
+            type,
+            content,
+            order: latest.current.blocks.length,
+          },
+          { onSuccess: () => setBlockOpen(false) },
+        );
+      }
+    },
+    [editingBlock, createBlockMutate, updateBlockMutate],
+  );
+
+  const handleCreateQuestion = useCallback(
+    (payload: Record<string, unknown>) => createQuestionMutate(payload),
+    [createQuestionMutate],
+  );
+
+  const handleUpdateQuestion = useCallback(
+    (payload: { id: string } & Record<string, unknown>) =>
+      updateQuestionMutate(payload),
+    [updateQuestionMutate],
+  );
+
+  const handleDeleteQuestion = useCallback(
+    (id: string) => deleteQuestionMutate(id),
+    [deleteQuestionMutate],
+  );
+
+  const handleImportQuiz = useCallback(
+    (payload: { questions: { q: string; options: string[]; answer: number }[] }) => {
+      const quizBlock = latest.current.blocks.find((block) => block.type === "QUIZ");
+      if (quizBlock) importQuizMutate({ blockId: quizBlock.id, payload });
+    },
+    [importQuizMutate],
+  );
+
+  const handleConfirmOpenChange = useCallback((open: boolean) => {
+    if (!open) setConfirm(null);
+  }, []);
+
+  const handleConfirm = useCallback(() => confirm?.onConfirm(), [confirm]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
@@ -202,8 +328,6 @@ export function CourseDetail({ courseId }: { courseId: string }) {
       </p>
     );
   }
-
-  const blocks = activeSilabus?.blocks ?? [];
 
   function handleBlockDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -561,19 +685,7 @@ export function CourseDetail({ courseId }: { courseId: string }) {
         paths={paths ?? []}
         tags={tags ?? []}
         isPending={mutations.updateCourse.isPending}
-        onSubmit={(values) =>
-          mutations.updateCourse.mutate(
-            {
-              title: values.title,
-              description: values.description,
-              status: values.status,
-              passingGrade: values.passingGrade,
-              pathId: values.pathId || null,
-              tagIds: values.tagIds,
-            },
-            { onSuccess: () => setSettingsOpen(false) },
-          )
-        }
+        onSubmit={handleSettingsSubmit}
       />
 
       <CoursePartDialog
@@ -581,18 +693,7 @@ export function CourseDetail({ courseId }: { courseId: string }) {
         onOpenChange={setPartOpen}
         part={editingPart}
         isPending={mutations.createPart.isPending || mutations.updatePart.isPending}
-        onSubmit={(values) => {
-          if (editingPart) {
-            mutations.updatePart.mutate(
-              { id: editingPart.id, ...values },
-              { onSuccess: () => setPartOpen(false) },
-            );
-          } else {
-            mutations.createPart.mutate(values, {
-              onSuccess: () => setPartOpen(false),
-            });
-          }
-        }}
+        onSubmit={handlePartSubmit}
       />
 
       <SilabusPartDialog
@@ -602,18 +703,7 @@ export function CourseDetail({ courseId }: { courseId: string }) {
         courseParts={parts}
         defaultCoursePartId={silabusPartId}
         isPending={mutations.createSilabus.isPending || mutations.updateSilabus.isPending}
-        onSubmit={(values) => {
-          if (editingSilabus) {
-            mutations.updateSilabus.mutate(
-              { id: editingSilabus.id, ...values },
-              { onSuccess: () => setSilabusOpen(false) },
-            );
-          } else {
-            mutations.createSilabus.mutate(values, {
-              onSuccess: () => setSilabusOpen(false),
-            });
-          }
-        }}
+        onSubmit={handleSilabusSubmit}
       />
 
       <BlockDialog
@@ -621,24 +711,7 @@ export function CourseDetail({ courseId }: { courseId: string }) {
         onOpenChange={setBlockOpen}
         block={editingBlock}
         isPending={mutations.createBlock.isPending || mutations.updateBlock.isPending}
-        onSubmit={({ type, content }) => {
-          if (editingBlock) {
-            mutations.updateBlock.mutate(
-              { id: editingBlock.id, type, content },
-              { onSuccess: () => setBlockOpen(false) },
-            );
-          } else if (activeSilabus) {
-            mutations.createBlock.mutate(
-              {
-                silabusPartId: activeSilabus.id,
-                type,
-                content,
-                order: blocks.length,
-              },
-              { onSuccess: () => setBlockOpen(false) },
-            );
-          }
-        }}
+        onSubmit={handleBlockSubmit}
       />
 
       <QuizBuilderDialog
@@ -650,22 +723,15 @@ export function CourseDetail({ courseId }: { courseId: string }) {
           mutations.updateQuestion.isPending ||
           mutations.importQuiz.isPending
         }
-        onCreateQuestion={(payload) =>
-          mutations.createQuestion.mutate(payload)
-        }
-        onUpdateQuestion={(payload) => mutations.updateQuestion.mutate(payload)}
-        onDeleteQuestion={(id) => mutations.deleteQuestion.mutate(id)}
-        onImport={(payload) => {
-          const quizBlock = blocks.find((block) => block.type === "QUIZ");
-          if (quizBlock) mutations.importQuiz.mutate({ blockId: quizBlock.id, payload });
-        }}
+        onCreateQuestion={handleCreateQuestion}
+        onUpdateQuestion={handleUpdateQuestion}
+        onDeleteQuestion={handleDeleteQuestion}
+        onImport={handleImportQuiz}
       />
 
       <ConfirmDeleteDialog
         open={Boolean(confirm)}
-        onOpenChange={(open) => {
-          if (!open) setConfirm(null);
-        }}
+        onOpenChange={handleConfirmOpenChange}
         title={confirm?.title}
         description={confirm?.description}
         isPending={
@@ -673,7 +739,7 @@ export function CourseDetail({ courseId }: { courseId: string }) {
           mutations.deleteSilabus.isPending ||
           mutations.deleteBlock.isPending
         }
-        onConfirm={() => confirm?.onConfirm()}
+        onConfirm={handleConfirm}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,7 @@ export type CourseSettingsValues = {
   tagIds: string[];
 };
 
-export function CourseSettingsDialog({
+export const CourseSettingsDialog = memo(function CourseSettingsDialog({
   open,
   onOpenChange,
   course,
@@ -242,4 +242,4 @@ export function CourseSettingsDialog({
       </DialogContent>
     </Dialog>
   );
-}
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import { CheckCircle2, Loader2, Pencil, Plus, Trash2, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -138,7 +138,7 @@ function QuestionForm({
   );
 }
 
-export function QuizBuilderDialog({
+export const QuizBuilderDialog = memo(function QuizBuilderDialog({
   open,
   onOpenChange,
   block,
@@ -366,4 +366,4 @@ export function QuizBuilderDialog({
       </DialogContent>
     </Dialog>
   );
-}
+});

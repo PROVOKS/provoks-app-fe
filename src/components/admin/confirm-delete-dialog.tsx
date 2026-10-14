@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Loader2, Trash2 } from "lucide-react";
 
 import {
@@ -24,7 +25,7 @@ type ConfirmDeleteDialogProps = {
   onConfirm: () => void;
 };
 
-export function ConfirmDeleteDialog({
+export const ConfirmDeleteDialog = memo(function ConfirmDeleteDialog({
   open,
   onOpenChange,
   title = "Hapus data ini?",
@@ -60,4 +61,4 @@ export function ConfirmDeleteDialog({
       </AlertDialogContent>
     </AlertDialog>
   );
-}
+});
