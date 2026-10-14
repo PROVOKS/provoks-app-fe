@@ -25,7 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/admin/course/rich-text-editor";
 import { CodeBlock } from "@/components/shared/code-block";
 import { FileUpload } from "@/components/shared/file-upload";
-import { PdfViewer, SlidesViewer, FileCard } from "@/components/shared/file-viewer";
+import { FileCard } from "@/components/shared/file-viewer";
 import { CODE_LANGUAGES } from "@/lib/highlight";
 import type { BlockType, ContentBlock } from "@/types";
 
@@ -420,13 +420,20 @@ export function BlockDialog({
 
               <div className="flex flex-col gap-2">
                 <Label>Preview</Label>
-                {type === "PDF" ? (
-                  <PdfViewer url={str("url")} title={str("title")} height={260} />
-                ) : type === "SLIDES" ? (
-                  <SlidesViewer url={str("url")} title={str("title")} height={260} />
-                ) : (
-                  <FileCard url={str("url")} title={str("title")} />
-                )}
+                <FileCard
+                  url={str("url")}
+                  title={
+                    str("title") ||
+                    (type === "PDF"
+                      ? "Dokumen PDF"
+                      : type === "SLIDES"
+                        ? "Slide presentasi"
+                        : "Lampiran")
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  Pratinjau penuh tersedia di halaman Preview course.
+                </p>
               </div>
             </>
           ) : null}
