@@ -217,6 +217,13 @@
 .rich-text s {
   text-decoration: line-through;
 }
+.rich-text u {
+  text-decoration: underline;
+}
+.rich-text hr {
+  border-color: var(--border);
+  margin: 1rem 0;
+}
 .rich-text h1,
 .rich-text h2,
 .rich-text h3 {
