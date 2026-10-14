@@ -24,6 +24,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/admin/course/rich-text-editor";
 import { CodeBlock } from "@/components/shared/code-block";
+import { PdfViewer, SlidesViewer } from "@/components/shared/file-viewer";
 import { CODE_LANGUAGES } from "@/lib/highlight";
 import type { BlockType, ContentBlock } from "@/types";
 
@@ -36,6 +37,8 @@ export const BLOCK_TYPES: { value: BlockType; label: string; hint: string }[] = 
   { value: "CODE", label: "Code", hint: "Code block + highlight" },
   { value: "CALLOUT", label: "Callout", hint: "Catatan penting" },
   { value: "QUIZ", label: "Quiz", hint: "Buat sendiri atau import JSON" },
+  { value: "PDF", label: "PDF", hint: "Dokumen PDF" },
+  { value: "SLIDES", label: "PowerPoint", hint: "Slide presentasi" },
 ];
 
 type Content = Record<string, unknown>;
@@ -58,6 +61,9 @@ function defaultsFor(type: BlockType): Content {
       return { variant: "info", text: "" };
     case "QUIZ":
       return { title: "" };
+    case "PDF":
+    case "SLIDES":
+      return { url: "", title: "" };
     default:
       return {};
   }
@@ -340,6 +346,54 @@ export function BlockDialog({
                   value={str("text")}
                   onChange={(event) => set("text", event.target.value)}
                 />
+              </div>
+            </>
+          ) : null}
+
+          {type === "PDF" || type === "SLIDES" ? (
+            <>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="block-file-url">URL File</Label>
+                <Input
+                  id="block-file-url"
+                  className="font-mono text-[13px]"
+                  placeholder={
+                    type === "PDF"
+                      ? "https://cdn.provoks.id/modul.pdf"
+                      : "https://cdn.provoks.id/slide.pptx"
+                  }
+                  value={str("url")}
+                  onChange={(event) => set("url", event.target.value)}
+                />
+                {type === "SLIDES" ? (
+                  <p className="text-xs text-muted-foreground">
+                    Preview slide pakai Microsoft Office Online — butuh URL yang
+                    bisa diakses publik.
+                  </p>
+                ) : null}
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="block-file-title">Judul</Label>
+                <Input
+                  id="block-file-title"
+                  placeholder={
+                    type === "PDF"
+                      ? "Modul PDF: Dasar JSX"
+                      : "Slide: Pengenalan React"
+                  }
+                  value={str("title")}
+                  onChange={(event) => set("title", event.target.value)}
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label>Preview</Label>
+                {type === "PDF" ? (
+                  <PdfViewer url={str("url")} title={str("title")} />
+                ) : (
+                  <SlidesViewer url={str("url")} title={str("title")} />
+                )}
               </div>
             </>
           ) : null}

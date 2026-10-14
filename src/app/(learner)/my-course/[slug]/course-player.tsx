@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Check,
@@ -11,50 +10,51 @@ import {
   Clock,
   FileText,
   HelpCircle,
+  Lock,
   Play,
+  Sparkles,
 } from "lucide-react";
 
 import { BlockRenderer } from "@/components/learner/block-renderer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { api, type ApiEnvelope } from "@/lib/api-client";
+import {
+  useLearningCourse,
+  useUpdateProgress,
+  type LearningSilabusPart,
+} from "@/hooks/use-learning";
 import { cn } from "@/lib/utils";
-import type { ContentBlock, Course, CoursePart, SilabusPart } from "@/types";
-
-type CourseWithParts = Course & { parts: CoursePart[] };
 
 export function CoursePlayer({ slug }: { slug: string }) {
-  const { data: course, isLoading, isError } = useQuery({
-    queryKey: ["course-by-slug", slug],
-    queryFn: async () => {
-      const { data } = await api.get<ApiEnvelope<CourseWithParts>>(
-        `/courses/slug/${slug}`,
-      );
-      return data.data;
-    },
-  });
-
+  const { data, isLoading, isError, error } = useLearningCourse(slug);
+  const updateProgress = useUpdateProgress(slug);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [completed, setCompleted] = useState<Record<string, boolean>>({});
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
-  const flat = useMemo<SilabusPart[]>(
-    () => (course?.parts ?? []).flatMap((part) => part.silabusParts ?? []),
+  const course = data?.course;
+  const summary = data?.summary;
+
+  const flat = useMemo<LearningSilabusPart[]>(
+    () => (course?.parts ?? []).flatMap((part) => part.silabusParts),
     [course],
   );
 
+  // auto pilih materi pertama yang terbuka & belum selesai
   useEffect(() => {
-    if (!activeId && flat.length > 0) setActiveId(flat[0].id);
+    if (activeId || flat.length === 0) return;
+    const target =
+      flat.find((item) => item.unlocked && !item.completed) ??
+      flat.find((item) => item.unlocked) ??
+      flat[0];
+    setActiveId(target.id);
   }, [flat, activeId]);
 
   const active = flat.find((item) => item.id === activeId) ?? null;
   const index = active ? flat.findIndex((item) => item.id === active.id) : -1;
   const prev = index > 0 ? flat[index - 1] : null;
   const next = index >= 0 && index < flat.length - 1 ? flat[index + 1] : null;
-
-  const doneCount = Object.values(completed).filter(Boolean).length;
-  const progress = flat.length ? Math.round((doneCount / flat.length) * 100) : 0;
+  const nextLocked = Boolean(next && !next.unlocked);
 
   if (isLoading) {
     return (
@@ -68,14 +68,13 @@ export function CoursePlayer({ slug }: { slug: string }) {
   if (isError || !course) {
     return (
       <p className="py-24 text-center text-sm text-muted-foreground">
-        Course tidak ditemukan.
+        {(error as Error)?.message ?? "Course tidak ditemukan"}
       </p>
     );
   }
 
-  const quizBlock = active?.blocks?.find(
-    (block: ContentBlock) => block.type === "QUIZ",
-  );
+  const quizBlock = active?.blocks.find((block) => block.type === "QUIZ") ?? null;
+  const quizPassed = active?.quizPassed ?? false;
 
   return (
     <div className="flex flex-col gap-4">
@@ -86,18 +85,18 @@ export function CoursePlayer({ slug }: { slug: string }) {
             {course.title}
           </span>
           <span className="text-xs text-muted-foreground">
-            {doneCount} dari {flat.length} silabus selesai
+            {summary?.done ?? 0} dari {summary?.total ?? 0} materi selesai
           </span>
         </div>
         <div className="flex flex-1 items-center gap-3">
           <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
             <div
-              style={{ width: `${progress}%` }}
+              style={{ width: `${summary?.progressPercent ?? 0}%` }}
               className="h-full rounded-full bg-primary transition-all"
             />
           </div>
           <span className="w-10 shrink-0 text-right text-xs font-semibold text-primary">
-            {progress}%
+            {summary?.progressPercent ?? 0}%
           </span>
         </div>
       </div>
@@ -112,17 +111,17 @@ export function CoursePlayer({ slug }: { slug: string }) {
           <div className="h-px bg-border" />
 
           <div className="flex flex-col gap-3">
-            {(course.parts ?? []).map((part) => {
-              const items = part.silabusParts ?? [];
+            {course.parts.map((part) => {
               const isCollapsed = collapsed[part.id];
+              const items = part.silabusParts;
               return (
                 <div key={part.id} className="flex flex-col gap-1.5">
                   <button
                     type="button"
                     onClick={() =>
-                      setCollapsed((prev) => ({
-                        ...prev,
-                        [part.id]: !prev[part.id],
+                      setCollapsed((prevState) => ({
+                        ...prevState,
+                        [part.id]: !prevState[part.id],
                       }))
                     }
                     className="flex h-10 items-center gap-2 rounded-[10px] bg-muted px-2.5 text-left"
@@ -144,29 +143,36 @@ export function CoursePlayer({ slug }: { slug: string }) {
                     <div className="flex flex-col gap-0.5">
                       {items.map((item) => {
                         const isActive = item.id === activeId;
-                        const isDone = completed[item.id];
                         return (
                           <button
                             key={item.id}
                             type="button"
-                            onClick={() => setActiveId(item.id)}
+                            disabled={!item.unlocked}
+                            title={item.lockedReason ?? undefined}
+                            onClick={() => item.unlocked && setActiveId(item.id)}
                             className={cn(
                               "flex h-11 items-center justify-between rounded-[10px] px-2.5 text-left transition-colors",
-                              isActive ? "bg-primary/10" : "hover:bg-muted/60",
+                              isActive
+                                ? "bg-primary/10"
+                                : item.unlocked
+                                  ? "hover:bg-muted/60"
+                                  : "cursor-not-allowed opacity-55",
                             )}
                           >
                             <span className="flex min-w-0 items-center gap-2.5">
                               <span
                                 className={cn(
                                   "grid size-5 shrink-0 place-items-center rounded-full",
-                                  isDone
+                                  item.completed
                                     ? "bg-primary text-primary-foreground"
                                     : isActive
                                       ? "bg-primary/15 text-primary"
                                       : "bg-muted text-muted-foreground",
                                 )}
                               >
-                                {isDone ? (
+                                {!item.unlocked ? (
+                                  <Lock className="size-3" />
+                                ) : item.completed ? (
                                   <Check className="size-3" />
                                 ) : item.type === "VIDEO" ? (
                                   <Play className="size-3" />
@@ -206,9 +212,6 @@ export function CoursePlayer({ slug }: { slug: string }) {
                 <FileText className="size-5 text-muted-foreground" />
               </span>
               <p className="text-sm font-semibold">Belum ada materi</p>
-              <p className="max-w-[320px] text-xs text-muted-foreground">
-                Course ini belum punya silabus part yang dipublikasikan.
-              </p>
             </div>
           ) : (
             <>
@@ -237,17 +240,23 @@ export function CoursePlayer({ slug }: { slug: string }) {
                   <Clock className="size-3" />
                   {active.durationMinutes} menit
                 </Badge>
+                {active.completed ? (
+                  <Badge className="gap-1.5 bg-primary/10 text-primary">
+                    <Check className="size-3" />
+                    Selesai
+                  </Badge>
+                ) : null}
               </div>
 
               <div className="h-px bg-border" />
 
-              {(active.blocks?.length ?? 0) === 0 ? (
+              {active.blocks.length === 0 ? (
                 <p className="py-12 text-center text-sm text-muted-foreground">
                   Materi ini belum punya blok konten.
                 </p>
               ) : (
                 <div className="flex flex-col gap-6">
-                  {active.blocks?.map((block) =>
+                  {active.blocks.map((block) =>
                     block.type === "QUIZ" ? (
                       <div
                         key={block.id}
@@ -263,12 +272,15 @@ export function CoursePlayer({ slug }: { slug: string }) {
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {block.questions?.length ?? 0} soal
+                              {block.attempt
+                                ? ` · skor terakhir ${block.attempt.score}`
+                                : ""}
                             </span>
                           </div>
                         </div>
-                        <Button asChild>
+                        <Button asChild variant={quizPassed ? "outline" : "default"}>
                           <Link href={`/my-course/quiz/${block.id}`}>
-                            Mulai Quiz
+                            {quizPassed ? "Lihat / Ulangi Quiz" : "Mulai Quiz"}
                           </Link>
                         </Button>
                       </div>
@@ -284,40 +296,64 @@ export function CoursePlayer({ slug }: { slug: string }) {
               <div className="flex items-center justify-between">
                 <Button
                   variant="outline"
-                  disabled={!prev}
-                  onClick={() => prev && setActiveId(prev.id)}
+                  disabled={!prev || !prev.unlocked}
+                  onClick={() => prev?.unlocked && setActiveId(prev.id)}
                 >
                   <ArrowLeft className="size-4" />
                   Sebelumnya
                 </Button>
+
                 <div className="flex items-center gap-2.5">
+                  {active.hasQuiz ? (
+                    quizPassed ? (
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          updateProgress.mutate({
+                            silabusPartId: active.id,
+                            completed: !active.completed,
+                          })
+                        }
+                        disabled={updateProgress.isPending}
+                      >
+                        <Check className="size-4" />
+                        {active.completed ? "Tandai belum selesai" : "Tandai selesai"}
+                      </Button>
+                    ) : (
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Sparkles className="size-3.5" />
+                        Lulus kuis untuk membuka materi berikutnya
+                      </span>
+                    )
+                  ) : (
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        updateProgress.mutate({
+                          silabusPartId: active.id,
+                          completed: !active.completed,
+                        })
+                      }
+                      disabled={updateProgress.isPending}
+                    >
+                      <Check className="size-4" />
+                      {active.completed ? "Tandai belum selesai" : "Tandai selesai"}
+                    </Button>
+                  )}
+
                   <Button
-                    variant="outline"
-                    onClick={() =>
-                      active &&
-                      setCompleted((prevState) => ({
-                        ...prevState,
-                        [active.id]: !prevState[active.id],
-                      }))
-                    }
-                  >
-                    <Check className="size-4" />
-                    {completed[active.id]
-                      ? "Tandai belum selesai"
-                      : "Tandai selesai"}
-                  </Button>
-                  <Button
-                    disabled={!next}
-                    onClick={() => next && setActiveId(next.id)}
+                    disabled={!next || nextLocked}
+                    onClick={() => next?.unlocked && setActiveId(next.id)}
                   >
                     Berikutnya
                   </Button>
                 </div>
               </div>
 
-              {quizBlock ? (
+              {nextLocked ? (
                 <p className="text-center text-xs text-muted-foreground">
-                  Materi ini punya kuis — selesaikan untuk melanjutkan.
+                  Selesaikan materi ini dulu untuk membuka &ldquo;{next?.title}
+                  &rdquo;
                 </p>
               ) : null}
             </>

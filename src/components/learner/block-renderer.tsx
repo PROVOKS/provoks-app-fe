@@ -8,6 +8,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import { CodeBlock } from "@/components/shared/code-block";
+import { PdfViewer, SlidesViewer } from "@/components/shared/file-viewer";
 import type { ContentBlock } from "@/types";
 
 function str(content: Record<string, unknown>, key: string) {
@@ -224,6 +225,16 @@ export function BlockRenderer({ block }: { block: ContentBlock }) {
         </div>
       );
     }
+
+    case "PDF":
+      return (
+        <PdfViewer url={str(content, "url")} title={str(content, "title")} />
+      );
+
+    case "SLIDES":
+      return (
+        <SlidesViewer url={str(content, "url")} title={str(content, "title")} />
+      );
 
     default:
       return null;

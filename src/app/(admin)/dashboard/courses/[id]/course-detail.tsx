@@ -27,6 +27,7 @@ import {
   Pencil,
   Play,
   Plus,
+  Presentation,
   Settings2,
   Trash2,
   Upload,
@@ -68,6 +69,8 @@ const BLOCK_ICON: Record<BlockType, React.ComponentType<{ className?: string }>>
   CODE: Code2,
   CALLOUT: HelpCircle,
   QUIZ: CheckCircle2,
+  PDF: FileText,
+  SLIDES: Presentation,
 };
 
 const BLOCK_LABEL: Record<BlockType, string> = Object.fromEntries(
@@ -100,6 +103,9 @@ function blockPreview(block: ContentBlock) {
       return text("text").slice(0, 90) || "Catatan penting";
     case "QUIZ":
       return `${block.questions?.length ?? 0} soal`;
+    case "PDF":
+    case "SLIDES":
+      return text("title") || text("url") || "Dokumen";
     default:
       return "";
   }

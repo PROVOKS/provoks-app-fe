@@ -78,7 +78,9 @@ export type BlockType =
   | "VIDEO"
   | "CODE"
   | "CALLOUT"
-  | "QUIZ";
+  | "QUIZ"
+  | "PDF"
+  | "SLIDES";
 
 export type ContentBlock = {
   id: string;
