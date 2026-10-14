@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/components/providers/auth-provider";
+import { BrandLogo } from "@/components/shared/brand-logo";
 import { LogoutButton } from "@/components/shared/logout-button";
 import { cn } from "@/lib/utils";
 
@@ -74,9 +75,7 @@ export function LearnerSidebar() {
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="grid size-[34px] place-items-center rounded-[10px] bg-primary font-heading text-[17px] font-bold text-primary-foreground">
-              P
-            </span>
+            <BrandLogo className="h-[34px]" />
             <span className="font-heading text-[17px] font-bold">Provoks</span>
           </div>
           <PanelLeft className="size-4.5 text-muted-foreground" />

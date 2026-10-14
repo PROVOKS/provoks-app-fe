@@ -9,6 +9,7 @@ import { z } from "zod";
 import { CheckCircle2, Eye } from "lucide-react";
 
 import { useAuth } from "@/components/providers/auth-provider";
+import { BrandLogo } from "@/components/shared/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,9 +53,7 @@ export default function LoginPage() {
       {/* Panel brand */}
       <div className="hidden w-[640px] shrink-0 flex-col justify-between bg-brand-deep p-16 text-brand-deep-foreground lg:flex">
         <div className="flex items-center gap-3">
-          <span className="grid size-11 place-items-center rounded-xl bg-primary font-heading text-[22px] font-bold text-primary-foreground">
-            P
-          </span>
+          <BrandLogo className="h-11" />
           <span className="font-heading text-[22px] font-bold">Provoks</span>
         </div>
 
