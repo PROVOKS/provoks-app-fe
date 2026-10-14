@@ -1,4 +1,6 @@
-export type Role = "ADMIN" | "INSTRUCTOR" | "STUDENT";
+import type { Role } from "@/lib/roles";
+
+export type { Role };
 
 export type User = {
   id: string;

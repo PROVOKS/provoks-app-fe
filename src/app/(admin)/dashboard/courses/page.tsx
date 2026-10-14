@@ -92,7 +92,7 @@ export default function CoursesPage() {
               Export
             </Button>
             <Button size="sm" asChild>
-              <Link href="/courses/new">
+              <Link href="/dashboard/courses/new">
                 <Plus className="size-4" />
                 Tambah Course
               </Link>
@@ -144,7 +144,7 @@ export default function CoursesPage() {
                     </TableCell>
                     <TableCell>
                       <Link
-                        href={`/courses/${course.id}`}
+                        href={`/dashboard/courses/${course.id}`}
                         className="flex items-center gap-2.5"
                       >
                         <span className="size-8 shrink-0 rounded-lg bg-secondary/25" />

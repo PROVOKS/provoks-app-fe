@@ -187,7 +187,7 @@ export default async function CoursePlayerPage({
               </div>
             </div>
             <Button asChild>
-              <Link href="/quiz/1">Mulai Quiz</Link>
+              <Link href="/my-course/quiz/1">Mulai Quiz</Link>
             </Button>
           </div>
 

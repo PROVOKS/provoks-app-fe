@@ -12,18 +12,20 @@ import {
   User,
 } from "lucide-react";
 
+import { useAuth } from "@/components/providers/auth-provider";
+import { LogoutButton } from "@/components/shared/logout-button";
 import { cn } from "@/lib/utils";
 
 const MAIN_NAV = [
-  { href: "/my-learning", label: "My Learning", icon: LayoutDashboard },
-  { href: "/catalog", label: "Katalog", icon: Grid2x2 },
-  { href: "/certificates", label: "Certificates", icon: Award },
-  { href: "/profile", label: "Profil", icon: User },
+  { href: "/my-course", label: "My Learning", icon: LayoutDashboard },
+  { href: "/my-course/catalog", label: "Katalog", icon: Grid2x2 },
+  { href: "/my-course/certificates", label: "Certificates", icon: Award },
+  { href: "/my-course/profile", label: "Profil", icon: User },
 ];
 
 const BOTTOM_NAV = [
-  { href: "/help", label: "Bantuan", icon: HelpCircle },
-  { href: "/settings", label: "Pengaturan", icon: Settings },
+  { href: "/my-course/help", label: "Bantuan", icon: HelpCircle },
+  { href: "/my-course/settings", label: "Pengaturan", icon: Settings },
 ];
 
 function NavItem({
@@ -57,6 +59,9 @@ function NavItem({
 }
 
 export function LearnerSidebar() {
+  const { user } = useAuth();
+  const initials = (user?.name ?? "Siswa").charAt(0).toUpperCase();
+
   return (
     <aside className="flex h-full w-[248px] shrink-0 flex-col justify-between gap-4 overflow-y-auto rounded-[20px] border border-border bg-card p-4 shadow-sm">
       <div className="flex flex-col gap-4">
@@ -87,14 +92,19 @@ export function LearnerSidebar() {
         </nav>
       </div>
 
-      <div className="flex items-center gap-2.5 rounded-xl bg-muted p-2.5">
-        <span className="grid size-[34px] place-items-center rounded-full bg-primary/10 font-heading text-[13px] font-bold text-primary">
-          A
-        </span>
-        <div className="flex flex-col">
-          <span className="text-[13px] font-semibold">Andi Pratama</span>
-          <span className="text-[11px] text-muted-foreground">Siswa</span>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-2.5 rounded-xl bg-muted p-2.5">
+          <span className="grid size-[34px] place-items-center rounded-full bg-primary/10 font-heading text-[13px] font-bold text-primary">
+            {initials}
+          </span>
+          <div className="flex flex-col overflow-hidden">
+            <span className="truncate text-[13px] font-semibold">
+              {user?.name ?? "Siswa"}
+            </span>
+            <span className="text-[11px] text-muted-foreground">Siswa</span>
+          </div>
         </div>
+        <LogoutButton />
       </div>
     </aside>
   );

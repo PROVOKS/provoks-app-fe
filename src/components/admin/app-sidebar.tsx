@@ -21,33 +21,34 @@ import {
   Users,
 } from "lucide-react";
 
+import { LogoutButton } from "@/components/shared/logout-button";
 import { cn } from "@/lib/utils";
 
 const MAIN_NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/courses", label: "Courses", icon: BookOpen },
-  { href: "/paths", label: "Paths", icon: Route },
-  { href: "/tags", label: "Tags", icon: Tags },
-  { href: "/students", label: "Students", icon: Users },
-  { href: "/assignments", label: "Assignments", icon: ClipboardList, badge: "12" },
-  { href: "/grades", label: "Grades", icon: BarChart3 },
-  { href: "/certificates", label: "Certificates", icon: Award },
+  { href: "/dashboard/courses", label: "Courses", icon: BookOpen },
+  { href: "/dashboard/paths", label: "Paths", icon: Route },
+  { href: "/dashboard/tags", label: "Tags", icon: Tags },
+  { href: "/dashboard/students", label: "Students", icon: Users },
+  { href: "/dashboard/assignments", label: "Assignments", icon: ClipboardList, badge: "12" },
+  { href: "/dashboard/grades", label: "Grades", icon: BarChart3 },
+  { href: "/dashboard/certificates", label: "Certificates", icon: Award },
 ];
 
 const MANAGE_NAV = [
-  { href: "/enrollments", label: "Enrollments", icon: UserPlus },
-  { href: "/instructors", label: "Instructors", icon: GraduationCap },
-  { href: "/schedule", label: "Schedule", icon: Calendar },
+  { href: "/dashboard/enrollments", label: "Enrollments", icon: UserPlus },
+  { href: "/dashboard/instructors", label: "Instructors", icon: GraduationCap },
+  { href: "/dashboard/schedule", label: "Schedule", icon: Calendar },
 ];
 
 const ANALYTICS_NAV = [
-  { href: "/reports", label: "Reports", icon: FileText },
-  { href: "/payments", label: "Payments", icon: CreditCard },
+  { href: "/dashboard/reports", label: "Reports", icon: FileText },
+  { href: "/dashboard/payments", label: "Payments", icon: CreditCard },
 ];
 
 const BOTTOM_NAV = [
-  { href: "/settings", label: "Settings", icon: Settings },
-  { href: "/help", label: "Help & Support", icon: HelpCircle },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard/help", label: "Help & Support", icon: HelpCircle },
 ];
 
 function NavItem({
@@ -130,11 +131,12 @@ export function AppSidebar() {
         </nav>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         <nav className="flex flex-col gap-1">
           {BOTTOM_NAV.map((item) => (
             <NavItem key={item.href} {...item} />
           ))}
+          <LogoutButton />
         </nav>
         <p className="text-[11px] text-muted-foreground">Provoks LMS v1.0</p>
       </div>

@@ -18,7 +18,7 @@ export default async function CourseDetailPage({
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <nav className="flex items-center gap-2 text-[13px] text-muted-foreground">
-          <Link href="/courses" className="hover:text-foreground">
+          <Link href="/dashboard/courses" className="hover:text-foreground">
             Manajemen Kursus
           </Link>
           <span>›</span>

@@ -1,52 +1,51 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { CheckCircle2, Eye } from "lucide-react";
 
+import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { api, TOKEN_KEY, USER_KEY, type ApiEnvelope } from "@/lib/api-client";
-import type { User } from "@/types";
+import { homeFor } from "@/lib/roles";
 
 const schema = z.object({
-  email: z.string().email("Format email tidak valid"),
+  email: z.email("Format email tidak valid"),
   password: z.string().min(6, "Minimal 6 karakter"),
 });
 
 type FormValues = z.infer<typeof schema>;
 
-type LoginResponse = { token: string; user: User };
-
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { email: "", password: "" },
   });
 
-  const login = useMutation({
-    mutationFn: async (values: FormValues) => {
-      const { data } = await api.post<ApiEnvelope<LoginResponse>>(
-        "/auth/login",
-        values,
-      );
-      return data.data;
-    },
-    onSuccess: (data) => {
-      window.localStorage.setItem(TOKEN_KEY, data.token);
-      window.localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-      toast.success("Berhasil masuk");
-      router.push(data.user.role === "STUDENT" ? "/my-learning" : "/dashboard");
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
+  async function onSubmit(values: FormValues) {
+    setIsSubmitting(true);
+    try {
+      const user = await login(values.email, values.password);
+      toast.success(`Selamat datang, ${user.name}`);
+
+      const next = new URLSearchParams(window.location.search).get("next");
+      router.push(next && next.startsWith("/") ? next : homeFor(user.role));
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal masuk");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <div className="flex min-h-screen">
@@ -94,7 +93,7 @@ export default function LoginPage() {
       {/* Panel form */}
       <div className="flex flex-1 items-center justify-center bg-background p-8">
         <form
-          onSubmit={form.handleSubmit((values) => login.mutate(values))}
+          onSubmit={form.handleSubmit(onSubmit)}
           className="flex w-[400px] flex-col gap-5"
         >
           <div className="flex flex-col gap-1.5">
@@ -146,13 +145,16 @@ export default function LoginPage() {
               <input type="checkbox" className="size-4 rounded border-border" />
               Ingat saya
             </label>
-            <a href="/forgot-password" className="text-sm font-semibold text-primary">
+            <a
+              href="/forgot-password"
+              className="text-sm font-semibold text-primary"
+            >
               Lupa password?
             </a>
           </div>
 
-          <Button type="submit" size="lg" disabled={login.isPending}>
-            {login.isPending ? "Memproses..." : "Masuk"}
+          <Button type="submit" size="lg" disabled={isSubmitting}>
+            {isSubmitting ? "Memproses..." : "Masuk"}
           </Button>
         </form>
       </div>

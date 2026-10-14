@@ -156,7 +156,7 @@ export function QuizAttempt({ id }: { id: string }) {
               </div>
               <div className="h-px bg-border" />
               <Button className="w-full" asChild>
-                <Link href={`/quiz/${id}/result`}>Submit Quiz</Link>
+                <Link href={`/my-course/quiz/${id}/result`}>Submit Quiz</Link>
               </Button>
             </CardContent>
           </Card>

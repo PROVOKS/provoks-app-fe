@@ -46,7 +46,7 @@ export default function NewCoursePage() {
     },
     onSuccess: (course) => {
       toast.success("Course dibuat. Lanjut menyusun struktur konten.");
-      router.push(`/courses/${course.id}`);
+      router.push(`/dashboard/courses/${course.id}`);
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -178,7 +178,7 @@ export default function NewCoursePage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => router.push("/courses")}
+                  onClick={() => router.push("/dashboard/courses")}
                 >
                   Batal
                 </Button>

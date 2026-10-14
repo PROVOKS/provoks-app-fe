@@ -70,14 +70,14 @@ export default function MyLearningPage() {
             </p>
           </div>
           <Button asChild>
-            <Link href="/learn/full-stack-web-development">Lanjutkan belajar</Link>
+            <Link href="/my-course/full-stack-web-development">Lanjutkan belajar</Link>
           </Button>
         </CardContent>
       </Card>
 
       <div className="grid grid-cols-3 gap-[18px]">
         {COURSES.map((course) => (
-          <Link key={course.title} href={`/learn/${course.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}>
+          <Link key={course.title} href={`/my-course/${course.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}>
           <Card className="gap-3.5 rounded-2xl p-4">
             <CardContent className="flex flex-col gap-3.5 p-0">
               <span className="h-[258px] w-full rounded-xl bg-secondary/25" />
