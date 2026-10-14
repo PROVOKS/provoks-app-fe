@@ -4,22 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Award,
-  BarChart3,
   BookOpen,
-  Calendar,
-  ClipboardList,
-  CreditCard,
-  FileText,
-  GraduationCap,
-  HelpCircle,
   LayoutDashboard,
   PanelLeft,
   Route,
-  Settings,
   Tags,
   UserCheck,
-  UserPlus,
   Users,
 } from "lucide-react";
 
@@ -34,26 +24,10 @@ const MAIN_NAV = [
   { href: "/dashboard/paths", label: "Paths", icon: Route },
   { href: "/dashboard/tags", label: "Tags", icon: Tags },
   { href: "/dashboard/users", label: "Users", icon: Users },
-  { href: "/dashboard/assignments", label: "Assignments", icon: ClipboardList, badge: "12" },
-  { href: "/dashboard/grades", label: "Grades", icon: BarChart3 },
-  { href: "/dashboard/certificates", label: "Certificates", icon: Award },
 ];
 
 const MANAGE_NAV = [
   { href: "/dashboard/path-requests", label: "Permintaan Path", icon: UserCheck },
-  { href: "/dashboard/enrollments", label: "Enrollments", icon: UserPlus },
-  { href: "/dashboard/instructors", label: "Instructors", icon: GraduationCap },
-  { href: "/dashboard/schedule", label: "Schedule", icon: Calendar },
-];
-
-const ANALYTICS_NAV = [
-  { href: "/dashboard/reports", label: "Reports", icon: FileText },
-  { href: "/dashboard/payments", label: "Payments", icon: CreditCard },
-];
-
-const BOTTOM_NAV = [
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
-  { href: "/dashboard/help", label: "Help & Support", icon: HelpCircle },
 ];
 
 function isNavActive(pathname: string, href: string) {
@@ -150,23 +124,10 @@ export function AppSidebar() {
             />
           ))}
         </nav>
-
-        <div className="h-px bg-border" />
-        <p className="text-[11px] font-semibold tracking-wider text-muted-foreground">
-          ANALYTICS
-        </p>
-        <nav className="flex flex-col gap-1">
-          {ANALYTICS_NAV.map((item) => (
-            <NavItem key={item.href} {...item} />
-          ))}
-        </nav>
       </div>
 
       <div className="flex flex-col gap-3">
         <nav className="flex flex-col gap-1">
-          {BOTTOM_NAV.map((item) => (
-            <NavItem key={item.href} {...item} />
-          ))}
           <LogoutButton />
         </nav>
         <p className="text-[11px] text-muted-foreground">Provoks LMS v1.0</p>
