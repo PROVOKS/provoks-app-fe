@@ -24,6 +24,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/admin/course/rich-text-editor";
 import { CodeBlock } from "@/components/shared/code-block";
+import { FileUpload } from "@/components/shared/file-upload";
 import { PdfViewer, SlidesViewer } from "@/components/shared/file-viewer";
 import { CODE_LANGUAGES } from "@/lib/highlight";
 import type { BlockType, ContentBlock } from "@/types";
@@ -206,6 +207,11 @@ export function BlockDialog({
 
           {type === "IMAGE" ? (
             <>
+              <FileUpload
+                accept="image/*"
+                hint="PNG, JPG, WEBP, SVG — maksimal 25MB"
+                onUploaded={(file) => set("url", file.url)}
+              />
               <div className="flex flex-col gap-2">
                 <Label htmlFor="block-url">URL Gambar</Label>
                 <Input
@@ -256,6 +262,11 @@ export function BlockDialog({
 
           {type === "VIDEO" ? (
             <>
+              <FileUpload
+                accept="video/*"
+                hint="MP4, WEBM — maksimal 25MB, atau tempel link YouTube/Vimeo"
+                onUploaded={(file) => set("url", file.url)}
+              />
               <div className="flex flex-col gap-2">
                 <Label htmlFor="block-video-url">URL Video</Label>
                 <Input
@@ -352,6 +363,15 @@ export function BlockDialog({
 
           {type === "PDF" || type === "SLIDES" ? (
             <>
+              <FileUpload
+                accept={type === "PDF" ? "application/pdf" : ".ppt,.pptx"}
+                hint={
+                  type === "PDF"
+                    ? "Dokumen PDF — maksimal 25MB"
+                    : "PowerPoint (.ppt / .pptx) — maksimal 25MB"
+                }
+                onUploaded={(file) => set("url", file.url)}
+              />
               <div className="flex flex-col gap-2">
                 <Label htmlFor="block-file-url">URL File</Label>
                 <Input

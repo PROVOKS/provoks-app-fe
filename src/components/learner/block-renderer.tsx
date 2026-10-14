@@ -129,6 +129,10 @@ export function BlockRenderer({ block }: { block: ContentBlock }) {
       const url = str(content, "url");
       const title = str(content, "title");
       const embed = toEmbedUrl(url);
+      const isFile =
+        /\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(url) ||
+        url.includes("/video/upload/");
+
       return (
         <div className="flex flex-col gap-2">
           {embed ? (
@@ -141,6 +145,12 @@ export function BlockRenderer({ block }: { block: ContentBlock }) {
                 className="size-full"
               />
             </div>
+          ) : isFile ? (
+            <video
+              src={url}
+              controls
+              className="w-full rounded-2xl border border-border bg-black"
+            />
           ) : (
             <div className="grid aspect-video place-items-center rounded-2xl border border-border bg-muted text-sm text-muted-foreground">
               {url ? "URL video tidak dikenali" : "Video belum diisi"}
