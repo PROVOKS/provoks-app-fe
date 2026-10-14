@@ -82,23 +82,24 @@ const BLOCK_LABEL: Record<BlockType, string> = Object.fromEntries(
 function blockPreview(block: ContentBlock) {
   const content = block.content ?? {};
   const text = (key: string) => String(content[key] ?? "");
+  const fallback = (label: string) => text("title") || label;
+
   switch (block.type) {
     case "HEADING":
       return text("text") || "Judul bagian";
     case "PARAGRAPH": {
       const html = String(content.html ?? "");
-      const text = String(content.text ?? "");
       const plain = html
         ? html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
-        : text;
+        : String(content.text ?? "");
       return plain.slice(0, 90) || "Paragraf materi";
     }
     case "IMAGE":
-      return text("caption") || text("url") || "Gambar pendukung";
+      return text("caption") || text("alt") || "Gambar pendukung";
     case "DIVIDER":
       return "Garis pemisah";
     case "VIDEO":
-      return text("title") || text("url") || "Embed video";
+      return fallback("Video");
     case "CODE":
       return text("code").slice(0, 70) || "Code block";
     case "CALLOUT":
@@ -106,10 +107,11 @@ function blockPreview(block: ContentBlock) {
     case "QUIZ":
       return `${block.questions?.length ?? 0} soal`;
     case "PDF":
+      return fallback("Dokumen PDF");
     case "SLIDES":
-      return text("title") || text("url") || "Dokumen";
+      return fallback("Slide presentasi");
     case "FILE":
-      return text("title") || text("url") || "Lampiran";
+      return fallback("Lampiran");
     default:
       return "";
   }
@@ -462,7 +464,7 @@ export function CourseDetail({ courseId }: { courseId: string }) {
                         return (
                           <SortableItem key={block.id} id={block.id}>
                             {({ listeners, attributes }) => (
-                              <div className="flex items-center justify-between gap-3 rounded-xl border border-border p-3 px-3.5">
+                              <div className="flex min-w-0 items-center justify-between gap-3 rounded-xl border border-border p-3 px-3.5">
                                 <div className="flex min-w-0 items-center gap-3">
                                   <button
                                     type="button"

@@ -82,7 +82,7 @@ export function FileCard({
       target="_blank"
       rel="noreferrer"
       className={cn(
-        "flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40",
+        "flex min-w-0 items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40",
         className,
       )}
     >
