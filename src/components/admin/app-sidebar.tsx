@@ -33,7 +33,7 @@ const MAIN_NAV = [
   { href: "/dashboard/courses", label: "Courses", icon: BookOpen },
   { href: "/dashboard/paths", label: "Paths", icon: Route },
   { href: "/dashboard/tags", label: "Tags", icon: Tags },
-  { href: "/dashboard/students", label: "Students", icon: Users },
+  { href: "/dashboard/users", label: "Users", icon: Users },
   { href: "/dashboard/assignments", label: "Assignments", icon: ClipboardList, badge: "12" },
   { href: "/dashboard/grades", label: "Grades", icon: BarChart3 },
   { href: "/dashboard/certificates", label: "Certificates", icon: Award },
@@ -107,7 +107,7 @@ export function AppSidebar() {
     queryKey: ["path-requests", "PENDING"],
     queryFn: async () => {
       const { data } = await api.get<ApiEnvelope<Paginated<PathRequest>>>(
-        "/students/path-requests",
+        "/users/path-requests",
         { params: { status: "PENDING", perPage: 1 } },
       );
       return data.data.meta.total;

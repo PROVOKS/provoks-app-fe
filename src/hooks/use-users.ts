@@ -5,11 +5,19 @@ import { toast } from "sonner";
 
 import { api, type ApiEnvelope } from "@/lib/api-client";
 import type {
+  ManagedUser,
   Paginated,
   PathEnrollmentStatus,
   PathRequest,
-  Student,
+  Role,
 } from "@/types";
+
+export type UserFilters = {
+  search?: string;
+  role?: Role | "ALL";
+  pathId?: string;
+  page?: number;
+};
 
 export type ImportRow = {
   line: number;
@@ -50,15 +58,61 @@ export type ImportResult = {
   errors: { line: number; nama: string; nim: string; message: string }[];
 };
 
-export function useStudents(params: { search?: string; pathId?: string; page?: number }) {
+export function useUsers(filters: UserFilters) {
   return useQuery({
-    queryKey: ["students", params],
+    queryKey: ["users", filters],
     queryFn: async () => {
-      const { data } = await api.get<ApiEnvelope<Paginated<Student>>>("/students", {
-        params: { ...params, perPage: 20 },
+      const { data } = await api.get<ApiEnvelope<Paginated<ManagedUser>>>("/users", {
+        params: {
+          search: filters.search || undefined,
+          role: filters.role && filters.role !== "ALL" ? filters.role : undefined,
+          pathId: filters.pathId || undefined,
+          page: filters.page,
+          perPage: 20,
+        },
       });
       return data.data;
     },
+  });
+}
+
+export function useUpdateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: {
+      id: string;
+      name?: string;
+      email?: string;
+      role?: Role;
+      nim?: string;
+      prodi?: string;
+      password?: string;
+    }) => {
+      const { id, ...body } = payload;
+      const { data } = await api.put<ApiEnvelope<ManagedUser>>(`/users/${id}`, body);
+      return data.data;
+    },
+    onSuccess: () => {
+      toast.success("User diperbarui");
+      void queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+}
+
+export function useDeleteUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/users/${id}`);
+    },
+    onSuccess: () => {
+      toast.success("User dihapus");
+      void queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
   });
 }
 
@@ -67,7 +121,7 @@ export function usePreviewImportStudents() {
   return useMutation({
     mutationFn: async (csv: string) => {
       const { data } = await api.post<ApiEnvelope<ImportPreview>>(
-        "/students/import/preview",
+        "/users/import/preview",
         { csv },
       );
       return data.data;
@@ -82,7 +136,7 @@ export function useImportStudents() {
   return useMutation({
     mutationFn: async (csv: string) => {
       const { data } = await api.post<ApiEnvelope<ImportResult>>(
-        "/students/import",
+        "/users/import",
         { csv },
       );
       return data.data;
@@ -91,7 +145,7 @@ export function useImportStudents() {
       toast.success(
         `Import selesai: ${result.imported} siswa (${result.created} baru, ${result.updated} diperbarui)`,
       );
-      void queryClient.invalidateQueries({ queryKey: ["students"] });
+      void queryClient.invalidateQueries({ queryKey: ["users"] });
       void queryClient.invalidateQueries({ queryKey: ["path-requests"] });
     },
     onError: (error: Error) => toast.error(error.message),
@@ -103,7 +157,7 @@ export function usePathRequests(status: PathEnrollmentStatus | "ALL" = "PENDING"
     queryKey: ["path-requests", status],
     queryFn: async () => {
       const { data } = await api.get<ApiEnvelope<Paginated<PathRequest>>>(
-        "/students/path-requests",
+        "/users/path-requests",
         { params: { status, perPage: 50 } },
       );
       return data.data;
@@ -121,7 +175,7 @@ export function useReviewPathRequest() {
       note?: string;
     }) => {
       const { data } = await api.patch<ApiEnvelope<unknown>>(
-        `/students/path-requests/${payload.id}`,
+        `/users/path-requests/${payload.id}`,
         { status: payload.status, note: payload.note },
       );
       return data.data;
@@ -131,7 +185,7 @@ export function useReviewPathRequest() {
         variables.status === "APPROVED" ? "Pengajuan disetujui" : "Pengajuan ditolak",
       );
       void queryClient.invalidateQueries({ queryKey: ["path-requests"] });
-      void queryClient.invalidateQueries({ queryKey: ["students"] });
+      void queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (error: Error) => toast.error(error.message),
   });

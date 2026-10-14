@@ -31,7 +31,7 @@ import {
   useImportStudents,
   usePreviewImportStudents,
   type ImportPreview,
-} from "@/hooks/use-students";
+} from "@/hooks/use-users";
 import { cn } from "@/lib/utils";
 
 const COLUMNS = "nama, nim, email, prodi, path, path_slug, perlu_review, catatan";
@@ -63,7 +63,7 @@ function StatusChip({ row }: { row: ImportPreview["rows"][number] }) {
   );
 }
 
-export function StudentImportDialog({
+export function UserImportDialog({
   open,
   onOpenChange,
 }: {

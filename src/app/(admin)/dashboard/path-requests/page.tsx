@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { usePathRequests, useReviewPathRequest } from "@/hooks/use-students";
+import { usePathRequests, useReviewPathRequest } from "@/hooks/use-users";
 import type { PathEnrollmentStatus } from "@/types";
 
 const TABS: { value: PathEnrollmentStatus; label: string }[] = [

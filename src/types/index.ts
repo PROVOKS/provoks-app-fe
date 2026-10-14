@@ -33,12 +33,15 @@ export type StudentPath = {
   enrollmentId: string;
 };
 
-export type Student = {
+/** user yang dikelola dari halaman Manajemen User (semua role) */
+export type ManagedUser = {
   id: string;
   name: string;
   email: string;
+  role: Role;
   nim?: string | null;
   prodi?: string | null;
+  avatarUrl?: string | null;
   createdAt: string;
   paths: StudentPath[];
 };
