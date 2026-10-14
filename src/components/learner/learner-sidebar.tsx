@@ -58,7 +58,7 @@ function NavItem({
 
 export function LearnerSidebar() {
   return (
-    <aside className="flex w-[248px] shrink-0 flex-col justify-between gap-4 rounded-[20px] border border-border bg-card p-4 shadow-sm">
+    <aside className="flex h-full w-[248px] shrink-0 flex-col justify-between gap-4 overflow-y-auto rounded-[20px] border border-border bg-card p-4 shadow-sm">
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">

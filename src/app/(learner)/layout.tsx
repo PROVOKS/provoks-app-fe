@@ -11,21 +11,24 @@ export default function LearnerLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen items-start gap-[18px] bg-muted/60 p-[18px]">
-      <div className="sticky top-[18px] h-[calc(100vh-36px)]">
+    <div className="flex h-screen gap-[18px] overflow-hidden bg-muted/60 p-[18px]">
+      <div className="h-full shrink-0">
         <Suspense
           fallback={
-            <div className="h-full w-[248px] shrink-0 rounded-[20px] border border-border bg-card" />
+            <div className="h-full w-[248px] rounded-[20px] border border-border bg-card" />
           }
         >
           <LearnerSidebar />
         </Suspense>
       </div>
-      <main className="flex w-full min-w-0 flex-col gap-4">
-        <Suspense fallback={<div className="h-14 w-full" />}>
-          <LearnerTopbar />
-        </Suspense>
-        {children}
+
+      <main className="flex h-full w-full min-w-0 flex-col gap-4">
+        <div className="shrink-0">
+          <Suspense fallback={<div className="h-14 w-full" />}>
+            <LearnerTopbar />
+          </Suspense>
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto pr-1">{children}</div>
       </main>
     </div>
   );
