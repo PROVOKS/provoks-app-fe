@@ -1,8 +1,13 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { Download, Ellipsis, Plus, Search } from "lucide-react";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Download, Plus, Search } from "lucide-react";
+import { toast } from "sonner";
 
+import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
+import { PathFormDialog } from "@/components/admin/path-form-dialog";
+import { RowActions } from "@/components/admin/row-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,7 +28,18 @@ const LEVEL_COLOR: Record<Path["level"], string> = {
   ADVANCED: "text-primary",
 };
 
+const STATUS_LABEL: Record<Path["status"], string> = {
+  DRAFT: "Draft",
+  PUBLISHED: "Published",
+  ARCHIVED: "Archived",
+};
+
 export default function PathsPage() {
+  const queryClient = useQueryClient();
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<Path | null>(null);
+  const [deleting, setDeleting] = useState<Path | null>(null);
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["paths"],
     queryFn: async () => {
@@ -32,7 +48,29 @@ export default function PathsPage() {
     },
   });
 
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/paths/${id}`);
+    },
+    onSuccess: () => {
+      toast.success("Path dihapus");
+      void queryClient.invalidateQueries({ queryKey: ["paths"] });
+      setDeleting(null);
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
   const paths = data?.items ?? [];
+
+  function openCreate() {
+    setEditing(null);
+    setFormOpen(true);
+  }
+
+  function openEdit(path: Path) {
+    setEditing(path);
+    setFormOpen(true);
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -47,18 +85,16 @@ export default function PathsPage() {
 
       <div className="rounded-[20px] border border-border bg-card p-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="relative w-80">
-              <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder="Cari path..." className="h-9 pl-10" />
-            </div>
+          <div className="relative w-80">
+            <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input placeholder="Cari path..." className="h-9 pl-10" />
           </div>
           <div className="flex items-center gap-2.5">
             <Button variant="outline" size="sm">
               <Download className="size-4" />
               Export
             </Button>
-            <Button size="sm">
+            <Button size="sm" onClick={openCreate}>
               <Plus className="size-4" />
               Tambah Path
             </Button>
@@ -80,18 +116,14 @@ export default function PathsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-[11px] font-semibold tracking-wider text-muted-foreground">
-                    PATH
-                  </TableHead>
-                  <TableHead className="text-[11px] font-semibold tracking-wider text-muted-foreground">
-                    LEVEL
-                  </TableHead>
-                  <TableHead className="text-[11px] font-semibold tracking-wider text-muted-foreground">
-                    COURSE
-                  </TableHead>
-                  <TableHead className="text-[11px] font-semibold tracking-wider text-muted-foreground">
-                    STATUS
-                  </TableHead>
+                  {["PATH", "LEVEL", "COURSE", "STATUS"].map((head) => (
+                    <TableHead
+                      key={head}
+                      className="text-[11px] font-semibold tracking-wider text-muted-foreground"
+                    >
+                      {head}
+                    </TableHead>
+                  ))}
                   <TableHead className="w-16 text-[11px] font-semibold tracking-wider text-muted-foreground">
                     AKSI
                   </TableHead>
@@ -112,10 +144,14 @@ export default function PathsPage() {
                       {path.courseCount ?? 0} course
                     </TableCell>
                     <TableCell className="text-[13px] text-muted-foreground">
-                      {path.status}
+                      {STATUS_LABEL[path.status]}
                     </TableCell>
                     <TableCell>
-                      <Ellipsis className="size-4 text-muted-foreground" />
+                      <RowActions
+                        label={`Aksi ${path.name}`}
+                        onEdit={() => openEdit(path)}
+                        onDelete={() => setDeleting(path)}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -124,6 +160,19 @@ export default function PathsPage() {
           )}
         </div>
       </div>
+
+      <PathFormDialog open={formOpen} onOpenChange={setFormOpen} path={editing} />
+
+      <ConfirmDeleteDialog
+        open={Boolean(deleting)}
+        onOpenChange={(open) => {
+          if (!open) setDeleting(null);
+        }}
+        title={`Hapus path "${deleting?.name ?? ""}"?`}
+        description="Path beserta relasinya akan dihapus permanen. Tindakan ini tidak bisa dibatalkan."
+        isPending={remove.isPending}
+        onConfirm={() => deleting && remove.mutate(deleting.id)}
+      />
     </div>
   );
 }

@@ -51,6 +51,13 @@ const BOTTOM_NAV = [
   { href: "/dashboard/help", label: "Help & Support", icon: HelpCircle },
 ];
 
+function isNavActive(pathname: string, href: string) {
+  if (pathname === href) return true;
+  // root section (/dashboard) jangan ikut aktif di sub-halaman
+  if (href === "/dashboard") return false;
+  return pathname.startsWith(`${href}/`);
+}
+
 function NavItem({
   href,
   label,
@@ -63,7 +70,7 @@ function NavItem({
   badge?: string;
 }) {
   const pathname = usePathname();
-  const active = pathname === href || pathname.startsWith(`${href}/`);
+  const active = isNavActive(pathname, href);
 
   return (
     <Link

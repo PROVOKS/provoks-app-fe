@@ -1,8 +1,13 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { Download, Ellipsis, Plus, Search } from "lucide-react";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Download, Plus, Search } from "lucide-react";
+import { toast } from "sonner";
 
+import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
+import { RowActions } from "@/components/admin/row-actions";
+import { TagFormDialog } from "@/components/admin/tag-form-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,6 +23,11 @@ import { api, type ApiEnvelope } from "@/lib/api-client";
 import type { Paginated, Tag } from "@/types";
 
 export default function TagsPage() {
+  const queryClient = useQueryClient();
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<Tag | null>(null);
+  const [deleting, setDeleting] = useState<Tag | null>(null);
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["tags"],
     queryFn: async () => {
@@ -26,7 +36,29 @@ export default function TagsPage() {
     },
   });
 
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/tags/${id}`);
+    },
+    onSuccess: () => {
+      toast.success("Tag dihapus");
+      void queryClient.invalidateQueries({ queryKey: ["tags"] });
+      setDeleting(null);
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
   const tags = data?.items ?? [];
+
+  function openCreate() {
+    setEditing(null);
+    setFormOpen(true);
+  }
+
+  function openEdit(tag: Tag) {
+    setEditing(tag);
+    setFormOpen(true);
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -50,7 +82,7 @@ export default function TagsPage() {
               <Download className="size-4" />
               Export
             </Button>
-            <Button size="sm">
+            <Button size="sm" onClick={openCreate}>
               <Plus className="size-4" />
               Tambah Tag
             </Button>
@@ -103,7 +135,11 @@ export default function TagsPage() {
                       {tag.courseCount ?? 0} course
                     </TableCell>
                     <TableCell>
-                      <Ellipsis className="size-4 text-muted-foreground" />
+                      <RowActions
+                        label={`Aksi ${tag.name}`}
+                        onEdit={() => openEdit(tag)}
+                        onDelete={() => setDeleting(tag)}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -112,6 +148,19 @@ export default function TagsPage() {
           )}
         </div>
       </div>
+
+      <TagFormDialog open={formOpen} onOpenChange={setFormOpen} tag={editing} />
+
+      <ConfirmDeleteDialog
+        open={Boolean(deleting)}
+        onOpenChange={(open) => {
+          if (!open) setDeleting(null);
+        }}
+        title={`Hapus tag "${deleting?.name ?? ""}"?`}
+        description="Tag akan dilepas dari semua course yang memakainya. Tindakan ini tidak bisa dibatalkan."
+        isPending={remove.isPending}
+        onConfirm={() => deleting && remove.mutate(deleting.id)}
+      />
     </div>
   );
 }

@@ -1,9 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
-import { ChevronsUpDown, Download, Ellipsis, Plus, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ChevronsUpDown, Download, Plus, Search } from "lucide-react";
+import { toast } from "sonner";
 
+import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
+import { RowActions } from "@/components/admin/row-actions";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -26,33 +31,54 @@ import {
 import { api, type ApiEnvelope } from "@/lib/api-client";
 import type { Course, Paginated } from "@/types";
 
+const STATUS_STYLE: Record<Course["status"], string> = {
+  PUBLISHED: "bg-success/10 text-success",
+  DRAFT: "bg-muted text-muted-foreground",
+  ARCHIVED: "bg-warning/10 text-warning",
+};
+
+const STATUS_LABEL: Record<Course["status"], string> = {
+  PUBLISHED: "Published",
+  DRAFT: "Draft",
+  ARCHIVED: "Archived",
+};
+
 function StatusBadge({ status }: { status: Course["status"] }) {
-  const map: Record<Course["status"], string> = {
-    PUBLISHED: "bg-success/10 text-success",
-    DRAFT: "bg-muted text-muted-foreground",
-    ARCHIVED: "bg-warning/10 text-warning",
-  };
-  const label: Record<Course["status"], string> = {
-    PUBLISHED: "Published",
-    DRAFT: "Draft",
-    ARCHIVED: "Archived",
-  };
   return (
-    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${map[status]}`}>
-      {label[status]}
+    <span
+      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLE[status]}`}
+    >
+      {STATUS_LABEL[status]}
     </span>
   );
 }
 
 export default function CoursesPage() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [deleting, setDeleting] = useState<Course | null>(null);
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["courses"],
     queryFn: async () => {
-      const { data } = await api.get<ApiEnvelope<Paginated<Course>>>("/courses", {
-        params: { page: 1, perPage: 20 },
-      });
+      const { data } = await api.get<ApiEnvelope<Paginated<Course>>>(
+        "/courses",
+        { params: { page: 1, perPage: 20 } },
+      );
       return data.data;
     },
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/courses/${id}`);
+    },
+    onSuccess: () => {
+      toast.success("Course dihapus");
+      void queryClient.invalidateQueries({ queryKey: ["courses"] });
+      setDeleting(null);
+    },
+    onError: (error: Error) => toast.error(error.message),
   });
 
   const courses = data?.items ?? [];
@@ -168,7 +194,11 @@ export default function CoursesPage() {
                       <StatusBadge status={course.status} />
                     </TableCell>
                     <TableCell>
-                      <Ellipsis className="size-4 text-muted-foreground" />
+                      <RowActions
+                        label={`Aksi ${course.title}`}
+                        onEdit={() => router.push(`/dashboard/courses/${course.id}`)}
+                        onDelete={() => setDeleting(course)}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -177,6 +207,17 @@ export default function CoursesPage() {
           )}
         </div>
       </div>
+
+      <ConfirmDeleteDialog
+        open={Boolean(deleting)}
+        onOpenChange={(open) => {
+          if (!open) setDeleting(null);
+        }}
+        title={`Hapus course "${deleting?.title ?? ""}"?`}
+        description="Course beserta silabus dan progres siswa akan dihapus permanen."
+        isPending={remove.isPending}
+        onConfirm={() => deleting && remove.mutate(deleting.id)}
+      />
     </div>
   );
 }

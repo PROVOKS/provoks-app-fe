@@ -28,6 +28,13 @@ const BOTTOM_NAV = [
   { href: "/my-course/settings", label: "Pengaturan", icon: Settings },
 ];
 
+function isNavActive(pathname: string, href: string) {
+  if (pathname === href) return true;
+  // root section (/my-course) jangan ikut aktif di sub-halaman
+  if (href === "/my-course") return false;
+  return pathname.startsWith(`${href}/`);
+}
+
 function NavItem({
   href,
   label,
@@ -38,7 +45,7 @@ function NavItem({
   icon: React.ComponentType<{ className?: string }>;
 }) {
   const pathname = usePathname();
-  const active = pathname === href || pathname.startsWith(`${href}/`);
+  const active = isNavActive(pathname, href);
 
   return (
     <Link

@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { UserMenu } from "@/components/shared/user-menu";
 
 export function LearnerTopbar() {
   const { resolvedTheme, setTheme } = useTheme();
@@ -41,9 +42,10 @@ export function LearnerTopbar() {
         >
           <Bell className="size-4.5" />
         </Button>
-        <span className="grid size-9.5 place-items-center rounded-full bg-primary/10 font-heading text-sm font-bold text-primary">
-          A
-        </span>
+        <UserMenu
+          profileHref="/my-course/profile"
+          settingsHref="/my-course/settings"
+        />
       </div>
     </header>
   );
