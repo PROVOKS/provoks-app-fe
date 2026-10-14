@@ -23,7 +23,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/admin/course/rich-text-editor";
-import { CODE_LANGUAGES, highlightCode } from "@/lib/highlight";
+import { CodeBlock } from "@/components/shared/code-block";
+import { CODE_LANGUAGES } from "@/lib/highlight";
 import type { BlockType, ContentBlock } from "@/types";
 
 export const BLOCK_TYPES: { value: BlockType; label: string; hint: string }[] = [
@@ -306,14 +307,7 @@ export function BlockDialog({
 
               <div className="flex flex-col gap-2">
                 <Label>Preview</Label>
-                <pre className="overflow-x-auto rounded-xl bg-muted p-4 font-mono text-[13px] leading-5">
-                  <code
-                    className="hljs"
-                    dangerouslySetInnerHTML={{
-                      __html: highlightCode(str("code"), str("language")),
-                    }}
-                  />
-                </pre>
+                <CodeBlock code={str("code")} language={str("language")} />
               </div>
             </>
           ) : null}

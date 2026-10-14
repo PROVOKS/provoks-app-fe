@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { highlightCode, languageLabel } from "@/lib/highlight";
+import { CodeBlock } from "@/components/shared/code-block";
 import type { ContentBlock } from "@/types";
 
 function str(content: Record<string, unknown>, key: string) {
@@ -154,19 +154,10 @@ export function BlockRenderer({ block }: { block: ContentBlock }) {
 
     case "CODE":
       return (
-        <div className="flex flex-col gap-2">
-          <span className="font-mono text-xs text-muted-foreground">
-            {languageLabel(str(content, "language"))}
-          </span>
-          <pre className="overflow-x-auto rounded-xl bg-muted p-4 font-mono text-[13px] leading-5">
-            <code
-              className="hljs"
-              dangerouslySetInnerHTML={{
-                __html: highlightCode(str(content, "code"), str(content, "language")),
-              }}
-            />
-          </pre>
-        </div>
+        <CodeBlock
+          code={str(content, "code")}
+          language={str(content, "language")}
+        />
       );
 
     case "CALLOUT": {

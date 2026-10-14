@@ -277,6 +277,82 @@
 }
 
 /* ============================================================
+   Code block — gaya VS Code Dark+ (selalu gelap, light & dark mode)
+   ============================================================ */
+.code-block {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  border-color: #2d2d2d;
+}
+.code-block .code-head {
+  background: #252526;
+  border-color: #2d2d2d;
+}
+.code-block .hljs {
+  color: #d4d4d4;
+  background: transparent;
+}
+.code-block .hljs-comment,
+.code-block .hljs-quote {
+  color: #6a9955;
+  font-style: italic;
+}
+.code-block .hljs-keyword,
+.code-block .hljs-literal,
+.code-block .hljs-section,
+.code-block .hljs-doctag,
+.code-block .hljs-name,
+.code-block .hljs-strong {
+  color: #569cd6;
+}
+.code-block .hljs-string,
+.code-block .hljs-regexp,
+.code-block .hljs-addition,
+.code-block .hljs-meta .hljs-string {
+  color: #ce9178;
+}
+.code-block .hljs-number,
+.code-block .hljs-symbol,
+.code-block .hljs-bullet,
+.code-block .hljs-link,
+.code-block .hljs-selector-attr,
+.code-block .hljs-selector-pseudo {
+  color: #b5cea8;
+}
+.code-block .hljs-title,
+.code-block .hljs-title.function_,
+.code-block .hljs-built_in {
+  color: #dcdcaa;
+}
+.code-block .hljs-title.class_,
+.code-block .hljs-type {
+  color: #4ec9b0;
+}
+.code-block .hljs-attr,
+.code-block .hljs-attribute,
+.code-block .hljs-property,
+.code-block .hljs-variable,
+.code-block .hljs-template-variable,
+.code-block .hljs-selector-class {
+  color: #9cdcfe;
+}
+.code-block .hljs-tag,
+.code-block .hljs-selector,
+.code-block .hljs-selector-tag,
+.code-block .hljs-selector-id {
+  color: #569cd6;
+}
+.code-block .hljs-meta {
+  color: #c586c0;
+}
+.code-block .hljs-deletion {
+  color: #f44747;
+}
+.code-block .hljs-emphasis {
+  font-style: italic;
+}
+
+/* ============================================================
    Syntax highlighting (highlight.js) — memakai warna brand
    ============================================================ */
 :root {
