@@ -17,6 +17,76 @@ export type UploadedFile = {
   originalName: string;
 };
 
+/** Dikirim backend: cukup untuk upload langsung tanpa file melewati server. */
+type UploadSignature = {
+  cloudName: string;
+  apiKey: string;
+  folder: string;
+  timestamp: number;
+  signature: string;
+  maxBytes: number;
+  allowedMime: string[];
+};
+
+type CloudinaryResponse = {
+  secure_url?: string;
+  public_id?: string;
+  format?: string;
+  bytes?: number;
+  resource_type?: string;
+  error?: { message?: string };
+};
+
+/**
+ * Upload ke Cloudinary langsung dari browser. Pakai XMLHttpRequest (bukan fetch)
+ * karena hanya XHR yang punya event progress upload.
+ */
+function postToCloudinary(
+  sig: UploadSignature,
+  file: File,
+  onProgress: (percent: number) => void,
+): Promise<CloudinaryResponse> {
+  return new Promise((resolve, reject) => {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("api_key", sig.apiKey);
+    form.append("timestamp", String(sig.timestamp));
+    form.append("signature", sig.signature);
+    form.append("folder", sig.folder);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open(
+      "POST",
+      `https://api.cloudinary.com/v1_1/${sig.cloudName}/auto/upload`,
+    );
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        onProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    };
+
+    xhr.onload = () => {
+      let payload: CloudinaryResponse = {};
+      try {
+        payload = JSON.parse(xhr.responseText) as CloudinaryResponse;
+      } catch {
+        // respons bukan JSON — ditangani di bawah
+      }
+      if (xhr.status >= 200 && xhr.status < 300 && payload.secure_url) {
+        resolve(payload);
+      } else {
+        reject(
+          new Error(payload.error?.message ?? `Upload gagal (HTTP ${xhr.status})`),
+        );
+      }
+    };
+
+    xhr.onerror = () => reject(new Error("Koneksi ke Cloudinary gagal"));
+    xhr.send(form);
+  });
+}
+
 export function FileUpload({
   accept,
   label = "Tarik file ke sini atau pilih dari komputer",
@@ -32,23 +102,48 @@ export function FileUpload({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [dragging, setDragging] = useState(false);
 
   async function upload(file: File) {
     setIsUploading(true);
+    setProgress(0);
+
     try {
-      const form = new FormData();
-      form.append("file", file);
-      const { data } = await api.post<ApiEnvelope<UploadedFile>>(
-        "/uploads",
-        form,
+      // 1. minta tanda tangan dari API (file tidak dikirim ke server kita)
+      const { data } = await api.post<ApiEnvelope<UploadSignature>>(
+        "/uploads/signature",
       );
+      const sig = data.data;
+
+      // 2. validasi di sisi client sebelum menyentuh Cloudinary
+      if (file.size > sig.maxBytes) {
+        throw new Error(
+          `Ukuran file maksimal ${Math.round(sig.maxBytes / 1024 / 1024)}MB`,
+        );
+      }
+      const mime = file.type || "unknown";
+      if (sig.allowedMime.length && !sig.allowedMime.some((m) => mime.startsWith(m))) {
+        throw new Error(`Tipe file tidak didukung: ${mime}`);
+      }
+
+      // 3. kirim langsung ke Cloudinary
+      const payload = await postToCloudinary(sig, file, setProgress);
+
       toast.success(`"${file.name}" berhasil diunggah`);
-      onUploaded(data.data);
+      onUploaded({
+        url: payload.secure_url ?? "",
+        publicId: payload.public_id ?? "",
+        format: payload.format ?? "",
+        bytes: payload.bytes ?? file.size,
+        resourceType: payload.resource_type ?? "auto",
+        originalName: file.name,
+      });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Upload gagal");
     } finally {
       setIsUploading(false);
+      setProgress(0);
     }
   }
 
@@ -79,9 +174,19 @@ export function FileUpload({
         )}
       </span>
       <p className="text-[13px] font-medium">
-        {isUploading ? "Mengunggah..." : label}
+        {isUploading ? `Mengunggah... ${progress}%` : label}
       </p>
-      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+
+      {isUploading ? (
+        <div className="h-1.5 w-40 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-primary transition-[width] duration-200"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      ) : hint ? (
+        <p className="text-xs text-muted-foreground">{hint}</p>
+      ) : null}
 
       <input
         ref={inputRef}
