@@ -43,11 +43,13 @@ function NavItem({
   label,
   icon: Icon,
   badge,
+  onNavigate,
 }: {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
+  onNavigate?: () => void;
 }) {
   const pathname = usePathname();
   const active = isNavActive(pathname, href);
@@ -55,6 +57,7 @@ function NavItem({
   return (
     <Link
       href={href}
+      onClick={onNavigate}
       className={cn(
         "flex h-9 items-center justify-between rounded-[10px] px-2.5 text-sm transition-colors",
         active
@@ -77,7 +80,11 @@ function NavItem({
   );
 }
 
-export function AppSidebar() {
+export function AppSidebar({
+  onNavigate,
+}: {
+  onNavigate?: () => void;
+} = {}) {
   const { data: pendingRequests } = useQuery({
     queryKey: ["path-requests", "PENDING"],
     queryFn: async () => {
@@ -102,7 +109,7 @@ export function AppSidebar() {
 
         <nav className="flex flex-col gap-1">
           {MAIN_NAV.map((item) => (
-            <NavItem key={item.href} {...item} />
+            <NavItem key={item.href} {...item} onNavigate={onNavigate} />
           ))}
         </nav>
 
@@ -115,6 +122,7 @@ export function AppSidebar() {
             <NavItem
               key={item.href}
               {...item}
+              onNavigate={onNavigate}
               badge={
                 item.href === "/dashboard/path-requests" && pendingRequests
                   ? String(pendingRequests)

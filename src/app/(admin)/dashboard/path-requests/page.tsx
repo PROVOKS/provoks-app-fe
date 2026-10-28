@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { Check, Loader2, X } from "lucide-react";
 
+import { BulkActionBar } from "@/components/admin/bulk-action-bar";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DataTablePagination } from "@/components/ui/pagination";
 import {
@@ -15,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useBulkAction, useRowSelection } from "@/hooks/use-bulk";
 import { usePathRequests, useReviewPathRequest } from "@/hooks/use-users";
 import type { PathEnrollmentStatus } from "@/types";
 
@@ -51,8 +54,17 @@ export default function PathRequestsPage() {
   const [perPage, setPerPage] = useState(20);
   const { data, isLoading, isError } = usePathRequests(status, page, perPage);
   const review = useReviewPathRequest();
+  const bulk = useBulkAction("/users/path-requests/bulk", [
+    ["path-requests"],
+    ["stats"],
+  ]);
+
+  const { selected, toggle, toggleAll, clear } = useRowSelection();
 
   const requests = data?.items ?? [];
+  const ids = requests.map((request) => request.id);
+  const allChecked = ids.length > 0 && ids.every((id) => selected.has(id));
+  const someChecked = ids.some((id) => selected.has(id));
   const pendingId = review.isPending ? review.variables?.id : undefined;
 
   return (
@@ -83,6 +95,36 @@ export default function PathRequestsPage() {
           </TabsList>
         </Tabs>
 
+        <BulkActionBar count={selected.size} onClear={clear}>
+          <Button
+            size="sm"
+            disabled={bulk.isPending}
+            onClick={() =>
+              bulk.mutate(
+                { action: "APPROVED", ids: [...selected] },
+                { onSuccess: clear },
+              )
+            }
+          >
+            <Check className="size-3.5" />
+            Setujui
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={bulk.isPending}
+            onClick={() =>
+              bulk.mutate(
+                { action: "REJECTED", ids: [...selected] },
+                { onSuccess: clear },
+              )
+            }
+          >
+            <X className="size-3.5" />
+            Tolak
+          </Button>
+        </BulkActionBar>
+
         <div className="mt-4">
           {isLoading ? (
             <Skeleton className="h-40 w-full" />
@@ -98,6 +140,13 @@ export default function PathRequestsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      aria-label="Pilih semua"
+                      checked={allChecked ? true : someChecked ? "indeterminate" : false}
+                      onCheckedChange={() => toggleAll(ids)}
+                    />
+                  </TableHead>
                   {["SISWA", "NIM", "PATH DITUJU", "CATATAN", "STATUS"].map((head) => (
                     <TableHead
                       key={head}
@@ -113,7 +162,17 @@ export default function PathRequestsPage() {
               </TableHeader>
               <TableBody>
                 {requests.map((request) => (
-                  <TableRow key={request.id}>
+                  <TableRow
+                    key={request.id}
+                    data-state={selected.has(request.id) ? "selected" : undefined}
+                  >
+                    <TableCell>
+                      <Checkbox
+                        aria-label={`Pilih permintaan ${request.student.name}`}
+                        checked={selected.has(request.id)}
+                        onCheckedChange={() => toggle(request.id)}
+                      />
+                    </TableCell>
                     <TableCell className="text-[13px] font-medium">
                       {request.student.name}
                       <span className="block text-xs font-normal text-muted-foreground">
@@ -178,10 +237,14 @@ export default function PathRequestsPage() {
           <DataTablePagination
             meta={data.meta}
             itemLabel="permintaan"
-            onPageChange={setPage}
+            onPageChange={(next) => {
+              setPage(next);
+              clear();
+            }}
             onPerPageChange={(value) => {
               setPerPage(value);
               setPage(1);
+              clear();
             }}
           />
         ) : null}

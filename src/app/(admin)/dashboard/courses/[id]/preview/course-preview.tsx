@@ -42,7 +42,7 @@ export function CoursePreview({ courseId }: { courseId: string }) {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-[320px_1fr] gap-[18px]">
+      <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-[280px_minmax(0,1fr)]">
         <Skeleton className="h-[600px]" />
         <Skeleton className="h-[600px]" />
       </div>
@@ -83,7 +83,7 @@ export function CoursePreview({ courseId }: { courseId: string }) {
       </div>
 
       {/* Body */}
-      <div className="grid grid-cols-[320px_1fr] items-start gap-[18px]">
+      <div className="grid grid-cols-1 items-start gap-[18px] lg:grid-cols-[280px_minmax(0,1fr)]">
         {/* Silabus */}
         <div className="sticky top-0 flex max-h-[calc(100vh-120px)] flex-col gap-3.5 overflow-y-auto rounded-2xl border border-border bg-card p-4">
           <div className="flex flex-col gap-0.5">
@@ -255,7 +255,7 @@ export function CoursePreview({ courseId }: { courseId: string }) {
                   <ArrowLeft className="size-4" />
                   Sebelumnya
                 </Button>
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-wrap items-center gap-2.5">
                   <Button variant="outline" asChild>
                     <Link href={`/dashboard/courses/${courseId}`}>
                       <Undo2 className="size-4" />

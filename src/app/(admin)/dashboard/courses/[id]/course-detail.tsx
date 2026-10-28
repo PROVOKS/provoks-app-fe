@@ -313,7 +313,7 @@ export function CourseDetail({ courseId }: { courseId: string }) {
     return (
       <div className="flex flex-col gap-4">
         <Skeleton className="h-16 w-full" />
-        <div className="grid grid-cols-[420px_1fr] gap-[18px]">
+        <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-[380px_minmax(0,1fr)]">
           <Skeleton className="h-[600px]" />
           <Skeleton className="h-[600px]" />
         </div>
@@ -389,7 +389,7 @@ export function CourseDetail({ courseId }: { courseId: string }) {
       </div>
 
       {/* Body */}
-      <div className="grid grid-cols-[420px_1fr] items-start gap-[18px]">
+      <div className="grid grid-cols-1 items-start gap-[18px] lg:grid-cols-[380px_minmax(0,1fr)]">
         {/* Struktur konten */}
         <div className="flex flex-col gap-3.5 rounded-[20px] border border-border bg-card p-5">
           <div className="flex items-center justify-between">
@@ -507,7 +507,7 @@ export function CourseDetail({ courseId }: { courseId: string }) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="silabus-title-field">Judul Silabus Part</Label>
                   <Input

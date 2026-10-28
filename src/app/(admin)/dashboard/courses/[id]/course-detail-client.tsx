@@ -16,7 +16,7 @@ const CourseDetail = dynamic(
     loading: () => (
       <div className="flex flex-col gap-4">
         <Skeleton className="h-16 w-full" />
-        <div className="grid grid-cols-[420px_1fr] gap-[18px]">
+        <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-[380px_minmax(0,1fr)]">
           <Skeleton className="h-[600px]" />
           <Skeleton className="h-[600px]" />
         </div>

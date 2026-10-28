@@ -74,7 +74,7 @@ export default function NewCoursePage() {
         </h1>
       </div>
 
-      <div className="grid grid-cols-[420px_1fr] items-start gap-[18px]">
+      <div className="grid grid-cols-1 items-start gap-[18px] lg:grid-cols-[380px_minmax(0,1fr)]">
         <Card className="rounded-[20px] p-5">
           <CardContent className="flex flex-col gap-3.5 p-0">
             <div className="flex items-center justify-between">
@@ -128,7 +128,7 @@ export default function NewCoursePage() {
                 ) : null}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
                   <Label>
                     Path <span className="text-destructive">*</span>
