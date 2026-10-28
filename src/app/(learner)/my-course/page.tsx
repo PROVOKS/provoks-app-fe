@@ -3,11 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
+  ArrowUpRight,
   BookOpen,
   CheckCircle2,
   Clock,
   Flame,
-  KeyRound,
   Lock,
   Play,
 } from "lucide-react";
@@ -138,7 +138,7 @@ export default function MyLearningPage() {
       ) : (
         <p className="rounded-2xl border border-border bg-card px-5 py-12 text-center text-sm text-muted-foreground">
           {joinedPaths.length === 0
-            ? "Kamu belum mengikuti path apa pun. Masukkan kode akses di bawah untuk mulai belajar."
+            ? "Kamu belum mengikuti path apa pun. Pilih path di bawah, lalu masukkan kode akses dari admin atau instruktur."
             : "Belum ada course di path yang kamu ikuti."}
         </p>
       )}
@@ -223,24 +223,11 @@ export default function MyLearningPage() {
       ) : null}
 
       <div className="rounded-2xl border border-border bg-card p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex flex-col gap-0.5">
-            <h2 className="font-heading text-[17px] font-bold">Path Belajar</h2>
-            <p className="text-[13px] text-muted-foreground">
-              Ingin ikut path lain? Masukkan kode akses dari admin atau instruktur.
-            </p>
-          </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              setJoinPathName(undefined);
-              setJoinOpen(true);
-            }}
-          >
-            <KeyRound className="size-3.5" />
-            Masukkan kode
-          </Button>
+        <div className="flex flex-col gap-0.5">
+          <h2 className="font-heading text-[17px] font-bold">Path Belajar</h2>
+          <p className="text-[13px] text-muted-foreground">
+            Masuk ke path baru dengan kode akses dari admin atau instruktur.
+          </p>
         </div>
 
         {pathsQuery.isLoading ? (
@@ -251,43 +238,56 @@ export default function MyLearningPage() {
           </p>
         ) : (
           <div className="mt-4 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-            {paths.map((path) => (
-              <div
-                key={path.id}
-                className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border p-4"
-              >
-                <div className="flex min-w-0 flex-col gap-1">
-                  <span className="flex flex-wrap items-center gap-2 text-[14px] font-semibold">
-                    {path.name}
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
-                      {path.isFastTrack ? "Fast Track" : "Reguler"}
-                    </span>
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {path.courseCount} course
-                  </span>
-                </div>
+            {paths.map((path) => {
+              const firstCourse = courses.find(
+                (course) => course.path?.id === path.id && !course.locked,
+              );
 
-                {path.joined ? (
-                  <span className="flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
-                    <CheckCircle2 className="size-3.5" />
-                    Diikuti
-                  </span>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setJoinPathName(path.name);
-                      setJoinOpen(true);
-                    }}
-                  >
-                    <KeyRound className="size-3.5" />
-                    Masukkan kode
-                  </Button>
-                )}
-              </div>
-            ))}
+              return (
+                <div
+                  key={path.id}
+                  className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border p-4"
+                >
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <span className="flex flex-wrap items-center gap-2 text-[14px] font-semibold">
+                      {path.name}
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                        {path.isFastTrack ? "Fast Track" : "Reguler"}
+                      </span>
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {path.courseCount} course
+                    </span>
+                  </div>
+
+                  {path.joined && firstCourse ? (
+                    <Button size="sm" variant="outline" asChild>
+                      <Link href={`/my-course/${firstCourse.slug}`}>
+                        Pelajari
+                        <ArrowUpRight className="size-3.5" />
+                      </Link>
+                    </Button>
+                  ) : path.joined ? (
+                    <span className="flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                      <CheckCircle2 className="size-3.5" />
+                      Diikuti
+                    </span>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setJoinPathName(path.name);
+                        setJoinOpen(true);
+                      }}
+                    >
+                      Pelajari
+                      <ArrowUpRight className="size-3.5" />
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
