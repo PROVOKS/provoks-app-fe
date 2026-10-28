@@ -10,6 +10,7 @@ import { CheckCircle2, Eye } from "lucide-react";
 
 import { useAuth } from "@/components/providers/auth-provider";
 import { BrandLogo } from "@/components/shared/brand-logo";
+import { GoogleLoginButton } from "@/components/shared/google-login-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,8 +25,9 @@ type FormValues = z.infer<typeof schema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -45,6 +47,22 @@ export default function LoginPage() {
       toast.error(error instanceof Error ? error.message : "Gagal masuk");
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function onGoogleCredential(credential: string) {
+    setIsGoogleSubmitting(true);
+    try {
+      const user = await loginWithGoogle(credential);
+      toast.success(`Selamat datang, ${user.name}`);
+
+      const next = new URLSearchParams(window.location.search).get("next");
+      router.push(next && next.startsWith("/") ? next : homeFor(user.role));
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal masuk dengan Google");
+    } finally {
+      setIsGoogleSubmitting(false);
     }
   }
 
@@ -93,7 +111,7 @@ export default function LoginPage() {
       <div className="flex flex-1 items-center justify-center bg-background p-8">
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex w-[400px] flex-col gap-5"
+          className="flex w-full max-w-[400px] flex-col gap-5"
         >
           <div className="flex flex-col gap-1.5">
             <h2 className="font-heading text-[28px] font-bold">
@@ -152,9 +170,11 @@ export default function LoginPage() {
             </a>
           </div>
 
-          <Button type="submit" size="lg" disabled={isSubmitting}>
+          <Button type="submit" size="lg" disabled={isSubmitting || isGoogleSubmitting}>
             {isSubmitting ? "Memproses..." : "Masuk"}
           </Button>
+
+          <GoogleLoginButton onCredential={onGoogleCredential} />
         </form>
       </div>
     </div>
