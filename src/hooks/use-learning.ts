@@ -42,6 +42,15 @@ export type MyCourse = {
   durationMinutes: number;
   path?: Path | null;
   tags?: Tag[];
+  enrolledAt?: string | null;
+  /// terkunci karena course prasyarat belum selesai
+  locked?: boolean;
+  blockedBy?: {
+    id: string;
+    title: string;
+    slug: string;
+    progressPercent: number;
+  } | null;
 };
 
 export type QuizPayload = {
@@ -98,9 +107,10 @@ export type LearningPath = {
   description?: string | null;
   isFastTrack: boolean;
   courseCount: number;
+  /// true kalau siswa sudah bergabung lewat kode
+  joined: boolean;
   status: "PENDING" | "APPROVED" | "REJECTED" | null;
   enrollmentId: string | null;
-  note: string | null;
 };
 
 export function useMyPaths() {
@@ -113,19 +123,26 @@ export function useMyPaths() {
   });
 }
 
-export function useRequestPath() {
+/** Gabung path memakai kode dari admin. */
+export function useJoinPath() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload: { pathId: string; note?: string }) => {
-      const { data } = await api.post<ApiEnvelope<unknown>>(
-        "/learning/paths/request",
-        payload,
-      );
+    mutationFn: async (code: string) => {
+      const { data } = await api.post<
+        ApiEnvelope<{
+          alreadyJoined: boolean;
+          path: { id: string; name: string; slug: string };
+        }>
+      >("/learning/paths/join", { code });
       return data.data;
     },
-    onSuccess: () => {
-      toast.success("Pengajuan terkirim, menunggu approval admin/instruktur");
+    onSuccess: (result) => {
+      toast.success(
+        result.alreadyJoined
+          ? `Kamu sudah terdaftar di ${result.path.name}`
+          : `Berhasil bergabung ke ${result.path.name}`,
+      );
       void queryClient.invalidateQueries({ queryKey: ["learning-paths"] });
       void queryClient.invalidateQueries({ queryKey: ["learning-my-courses"] });
     },

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
+  BookOpen,
   Check,
   ChevronDown,
   ChevronRight,
@@ -66,10 +67,26 @@ export function CoursePlayer({ slug }: { slug: string }) {
   }
 
   if (isError || !course) {
+    const message = (error as Error)?.message ?? "Course tidak ditemukan";
+    const locked = message.toLowerCase().includes("terkunci");
+
     return (
-      <p className="py-24 text-center text-sm text-muted-foreground">
-        {(error as Error)?.message ?? "Course tidak ditemukan"}
-      </p>
+      <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card px-6 py-20 text-center">
+        <span className="grid size-12 place-items-center rounded-full bg-muted">
+          {locked ? (
+            <Lock className="size-5 text-muted-foreground" />
+          ) : (
+            <BookOpen className="size-5 text-muted-foreground" />
+          )}
+        </span>
+        <p className="font-heading text-[17px] font-semibold">
+          {locked ? "Course masih terkunci" : "Course tidak bisa dibuka"}
+        </p>
+        <p className="max-w-[380px] text-[13px] text-muted-foreground">{message}</p>
+        <Button asChild size="sm" variant="outline" className="mt-1">
+          <Link href="/my-course">Kembali ke My Learning</Link>
+        </Button>
+      </div>
     );
   }
 

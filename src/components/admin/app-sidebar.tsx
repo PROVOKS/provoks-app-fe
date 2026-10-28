@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
 import {
   BookOpen,
   LayoutDashboard,
@@ -11,15 +10,12 @@ import {
   PanelLeftOpen,
   Route,
   Tags,
-  UserCheck,
   Users,
 } from "lucide-react";
 
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { LogoutButton } from "@/components/shared/logout-button";
-import { api, type ApiEnvelope } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
-import type { Paginated, PathRequest } from "@/types";
 
 const MAIN_NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -27,10 +23,6 @@ const MAIN_NAV = [
   { href: "/dashboard/paths", label: "Paths", icon: Route },
   { href: "/dashboard/tags", label: "Tags", icon: Tags },
   { href: "/dashboard/users", label: "Users", icon: Users },
-];
-
-const MANAGE_NAV = [
-  { href: "/dashboard/path-requests", label: "Permintaan Path", icon: UserCheck },
 ];
 
 function isNavActive(pathname: string, href: string) {
@@ -101,17 +93,6 @@ export function AppSidebar({
   /** kalau diisi, tombol ciutkan/perluas ditampilkan */
   onToggleCollapse?: () => void;
 } = {}) {
-  const { data: pendingRequests } = useQuery({
-    queryKey: ["path-requests", "PENDING"],
-    queryFn: async () => {
-      const { data } = await api.get<ApiEnvelope<Paginated<PathRequest>>>(
-        "/users/path-requests",
-        { params: { status: "PENDING", perPage: 1 } },
-      );
-      return data.data.meta.total;
-    },
-  });
-
   return (
     <aside
       className={cn(
@@ -163,27 +144,6 @@ export function AppSidebar({
           ))}
         </nav>
 
-        <div className="h-px bg-border" />
-        {collapsed ? null : (
-          <p className="text-[11px] font-semibold tracking-wider text-muted-foreground">
-            MANAGE
-          </p>
-        )}
-        <nav className="flex flex-col gap-1">
-          {MANAGE_NAV.map((item) => (
-            <NavItem
-              key={item.href}
-              {...item}
-              onNavigate={onNavigate}
-              collapsed={collapsed}
-              badge={
-                item.href === "/dashboard/path-requests" && pendingRequests
-                  ? String(pendingRequests)
-                  : undefined
-              }
-            />
-          ))}
-        </nav>
       </div>
 
       <div className="flex flex-col gap-3">

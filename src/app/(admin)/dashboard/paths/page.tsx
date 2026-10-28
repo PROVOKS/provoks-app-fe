@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Archive, FilePen, Plus, Search, Send, Trash2 } from "lucide-react";
+import { Archive, FilePen, KeyRound, Plus, Search, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { BulkActionBar } from "@/components/admin/bulk-action-bar";
 import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
+import { PathCodesDialog } from "@/components/admin/path-codes-dialog";
 import { PathFormDialog } from "@/components/admin/path-form-dialog";
 import { RowActions } from "@/components/admin/row-actions";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -63,6 +64,7 @@ export default function PathsPage() {
   const [editing, setEditing] = useState<Path | null>(null);
   const [deleting, setDeleting] = useState<Path | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [codesPath, setCodesPath] = useState<Path | null>(null);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<Path["status"] | "ALL">("ALL");
   const [page, setPage] = useState(1);
@@ -287,11 +289,22 @@ export default function PathsPage() {
                       {STATUS_LABEL[path.status]}
                     </TableCell>
                     <TableCell>
+                      <div className="flex items-center gap-0.5">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="size-7 text-muted-foreground"
+                        aria-label={`Kode akses ${path.name}`}
+                        onClick={() => setCodesPath(path)}
+                      >
+                        <KeyRound className="size-3.5" />
+                      </Button>
                       <RowActions
                         label={`Aksi ${path.name}`}
                         onEdit={() => openEdit(path)}
                         onDelete={isAdmin ? () => setDeleting(path) : undefined}
                       />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -318,6 +331,14 @@ export default function PathsPage() {
       </div>
 
       <PathFormDialog open={formOpen} onOpenChange={setFormOpen} path={editing} />
+
+      <PathCodesDialog
+        open={Boolean(codesPath)}
+        onOpenChange={(next) => {
+          if (!next) setCodesPath(null);
+        }}
+        path={codesPath}
+      />
 
       <ConfirmDeleteDialog
         open={Boolean(deleting)}

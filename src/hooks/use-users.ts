@@ -4,13 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { api, type ApiEnvelope } from "@/lib/api-client";
-import type {
-  ManagedUser,
-  Paginated,
-  PathEnrollmentStatus,
-  PathRequest,
-  Role,
-} from "@/types";
+import type { ManagedUser, Paginated, Role } from "@/types";
 
 export type UserFilters = {
   search?: string;
@@ -170,50 +164,6 @@ export function useImportStudents() {
       toast.success(
         `Import selesai: ${result.imported} siswa (${result.created} baru, ${result.updated} diperbarui)`,
       );
-      void queryClient.invalidateQueries({ queryKey: ["users"] });
-      void queryClient.invalidateQueries({ queryKey: ["path-requests"] });
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
-}
-
-export function usePathRequests(
-  status: PathEnrollmentStatus | "ALL" = "PENDING",
-  page = 1,
-  perPage = 20,
-) {
-  return useQuery({
-    queryKey: ["path-requests", status, page, perPage],
-    queryFn: async () => {
-      const { data } = await api.get<ApiEnvelope<Paginated<PathRequest>>>(
-        "/users/path-requests",
-        { params: { status, page, perPage } },
-      );
-      return data.data;
-    },
-  });
-}
-
-export function useReviewPathRequest() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (payload: {
-      id: string;
-      status: "APPROVED" | "REJECTED";
-      note?: string;
-    }) => {
-      const { data } = await api.patch<ApiEnvelope<unknown>>(
-        `/users/path-requests/${payload.id}`,
-        { status: payload.status, note: payload.note },
-      );
-      return data.data;
-    },
-    onSuccess: (_data, variables) => {
-      toast.success(
-        variables.status === "APPROVED" ? "Pengajuan disetujui" : "Pengajuan ditolak",
-      );
-      void queryClient.invalidateQueries({ queryKey: ["path-requests"] });
       void queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (error: Error) => toast.error(error.message),

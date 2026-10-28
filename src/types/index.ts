@@ -85,6 +85,9 @@ export type Course = {
   passingGrade: number;
   pathId?: string | null;
   path?: Path | null;
+  /// prasyarat: course ini terbuka setelah course tersebut selesai 100%
+  blockedByCourseId?: string | null;
+  blockedBy?: { id: string; title: string; slug: string } | null;
   tags?: Tag[];
   studentCount?: number;
   parts?: CoursePart[];

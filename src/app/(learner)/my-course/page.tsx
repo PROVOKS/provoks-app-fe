@@ -1,27 +1,44 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { BookOpen, CheckCircle2, Clock, Flame, Lock, Play, Send } from "lucide-react";
+import {
+  BookOpen,
+  CheckCircle2,
+  Clock,
+  Flame,
+  KeyRound,
+  Lock,
+  Play,
+} from "lucide-react";
 
+import { JoinPathDialog } from "@/components/learner/join-path-dialog";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMyCourses, useMyPaths, useRequestPath } from "@/hooks/use-learning";
+import { useMyCourses, useMyPaths } from "@/hooks/use-learning";
+import { cn } from "@/lib/utils";
 
 export default function MyLearningPage() {
   const { user } = useAuth();
 
   const coursesQuery = useMyCourses();
   const pathsQuery = useMyPaths();
-  const requestPath = useRequestPath();
+
+  const [joinOpen, setJoinOpen] = useState(false);
+  const [joinPathName, setJoinPathName] = useState<string | undefined>();
 
   const courses = coursesQuery.data ?? [];
   const paths = pathsQuery.data ?? [];
+  const joinedPaths = paths.filter((path) => path.joined);
 
   const totalMenit = courses.reduce((sum, course) => sum + course.durationMinutes, 0);
   const totalSilabusCount = courses.reduce((sum, course) => sum + course.silabusCount, 0);
-  const continueCourse = courses.find((course) => course.progressPercent < 100) ?? courses[0];
+  const continueCourse =
+    courses.find((course) => !course.locked && course.progressPercent < 100) ??
+    courses.find((course) => !course.locked) ??
+    null;
 
   const stats = [
     {
@@ -46,7 +63,7 @@ export default function MyLearningPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex h-15 items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="font-heading text-2xl font-bold">
             Halo, {user?.name?.split(" ")[0] ?? "Siswa"}
@@ -55,12 +72,12 @@ export default function MyLearningPage() {
             Semangat, lanjutkan progres belajarmu hari ini.
           </p>
         </div>
-        <span className="flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+        <span className="hidden items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground sm:flex">
           <Flame className="size-3.5" />5 hari beruntun
         </span>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {stats.map((stat) => (
           <Card key={stat.label} className="gap-2.5 rounded-2xl p-4.5">
             <CardContent className="flex flex-col gap-2.5 p-0">
@@ -89,7 +106,7 @@ export default function MyLearningPage() {
         </p>
       ) : continueCourse ? (
         <Card className="rounded-2xl p-5">
-          <CardContent className="flex items-center gap-5 p-0">
+          <CardContent className="flex flex-col gap-5 p-0 sm:flex-row sm:items-center">
             <span className="grid size-[100px] shrink-0 place-items-center rounded-2xl bg-secondary/25">
               <Play className="size-6 text-secondary" />
             </span>
@@ -113,25 +130,43 @@ export default function MyLearningPage() {
                 </span>
               </p>
             </div>
-            <Button asChild>
+            <Button asChild className="w-full sm:w-auto">
               <Link href={`/my-course/${continueCourse.slug}`}>Lanjutkan belajar</Link>
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <p className="rounded-2xl border border-border bg-card py-12 text-center text-sm text-muted-foreground">
-          Belum ada course di path yang kamu ikuti. Ajukan path di bawah ini.
+        <p className="rounded-2xl border border-border bg-card px-5 py-12 text-center text-sm text-muted-foreground">
+          {joinedPaths.length === 0
+            ? "Kamu belum mengikuti path apa pun. Masukkan kode akses di bawah untuk mulai belajar."
+            : "Belum ada course di path yang kamu ikuti."}
         </p>
       )}
 
       {courses.length > 0 ? (
-        <div className="grid grid-cols-3 gap-[18px]">
-          {courses.map((course) => (
-            <Link key={course.id} href={`/my-course/${course.slug}`}>
-              <Card className="gap-3.5 rounded-2xl p-4 transition-colors hover:border-primary/40">
+        <div className="grid grid-cols-1 gap-[18px] sm:grid-cols-2 xl:grid-cols-3">
+          {courses.map((course) => {
+            const locked = Boolean(course.locked);
+            const card = (
+              <Card
+                className={cn(
+                  "h-full gap-3.5 rounded-2xl p-4 transition-colors",
+                  locked ? "opacity-70" : "hover:border-primary/40",
+                )}
+              >
                 <CardContent className="flex flex-col gap-3.5 p-0">
-                  <span className="grid h-[180px] w-full place-items-center rounded-xl bg-secondary/25">
-                    <Play className="size-6 text-secondary" />
+                  <span className="relative grid h-[180px] w-full place-items-center rounded-xl bg-secondary/25">
+                    {locked ? (
+                      <Lock className="size-6 text-secondary" />
+                    ) : (
+                      <Play className="size-6 text-secondary" />
+                    )}
+                    {locked ? (
+                      <span className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-card px-2 py-1 text-[11px] font-semibold text-muted-foreground">
+                        <Lock className="size-3" />
+                        Terkunci
+                      </span>
+                    ) : null}
                   </span>
                   <p className="font-heading text-[15px] font-semibold">
                     {course.title}
@@ -141,36 +176,71 @@ export default function MyLearningPage() {
                       {course.path.name}
                     </span>
                   ) : null}
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-primary"
-                      style={{ width: `${course.progressPercent}%` }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      {course.silabusCount} silabus
-                    </span>
-                    <span className="font-semibold text-muted-foreground">
-                      {course.progressPercent > 0
-                        ? `${course.progressPercent}% selesai`
-                        : "Belum dimulai"}
-                    </span>
-                  </div>
+
+                  {locked && course.blockedBy ? (
+                    <p className="text-xs text-muted-foreground">
+                      Selesaikan{" "}
+                      <span className="font-semibold text-foreground">
+                        {course.blockedBy.title}
+                      </span>{" "}
+                      dulu ({course.blockedBy.progressPercent}%).
+                    </p>
+                  ) : (
+                    <>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${course.progressPercent}%` }}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">
+                          {course.silabusCount} silabus
+                        </span>
+                        <span className="font-semibold text-muted-foreground">
+                          {course.progressPercent > 0
+                            ? `${course.progressPercent}% selesai`
+                            : "Belum dimulai"}
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
-            </Link>
-          ))}
+            );
+
+            return locked ? (
+              <div key={course.id} aria-disabled className="cursor-not-allowed">
+                {card}
+              </div>
+            ) : (
+              <Link key={course.id} href={`/my-course/${course.slug}`}>
+                {card}
+              </Link>
+            );
+          })}
         </div>
       ) : null}
 
       <div className="rounded-2xl border border-border bg-card p-5">
-        <div className="flex flex-col gap-0.5">
-          <h2 className="font-heading text-[17px] font-bold">Path Belajar</h2>
-          <p className="text-[13px] text-muted-foreground">
-            Kamu bisa mengikuti lebih dari satu path. Path tambahan perlu persetujuan
-            admin/instruktur.
-          </p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-col gap-0.5">
+            <h2 className="font-heading text-[17px] font-bold">Path Belajar</h2>
+            <p className="text-[13px] text-muted-foreground">
+              Ingin ikut path lain? Masukkan kode akses dari admin atau instruktur.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setJoinPathName(undefined);
+              setJoinOpen(true);
+            }}
+          >
+            <KeyRound className="size-3.5" />
+            Masukkan kode
+          </Button>
         </div>
 
         {pathsQuery.isLoading ? (
@@ -180,66 +250,53 @@ export default function MyLearningPage() {
             Belum ada path yang dipublikasikan.
           </p>
         ) : (
-          <div className="mt-4 grid grid-cols-2 gap-3.5">
-            {paths.map((path) => {
-              const isPending = path.status === "PENDING";
-              const isApproved = path.status === "APPROVED";
-              const isBusy = requestPath.isPending && requestPath.variables?.pathId === path.id;
-
-              return (
-                <div
-                  key={path.id}
-                  className="flex items-center justify-between gap-4 rounded-xl border border-border p-4"
-                >
-                  <div className="flex flex-col gap-1">
-                    <span className="flex items-center gap-2 text-[14px] font-semibold">
-                      {path.name}
-                      <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
-                        {path.isFastTrack ? "Fast Track" : "Reguler"}
-                      </span>
+          <div className="mt-4 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+            {paths.map((path) => (
+              <div
+                key={path.id}
+                className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border p-4"
+              >
+                <div className="flex min-w-0 flex-col gap-1">
+                  <span className="flex flex-wrap items-center gap-2 text-[14px] font-semibold">
+                    {path.name}
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                      {path.isFastTrack ? "Fast Track" : "Reguler"}
                     </span>
-                    <span className="text-xs text-muted-foreground">
-                      {path.courseCount} course
-                      {path.status ? ` · ${labelFor(path.status)}` : ""}
-                    </span>
-                  </div>
-
-                  {isApproved ? (
-                    <span className="flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
-                      <CheckCircle2 className="size-3.5" />
-                      Diikuti
-                    </span>
-                  ) : isPending ? (
-                    <span className="flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">
-                      <Lock className="size-3.5" />
-                      Menunggu approval
-                    </span>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant={path.status === "REJECTED" ? "outline" : "default"}
-                      disabled={isBusy}
-                      onClick={() => requestPath.mutate({ pathId: path.id })}
-                    >
-                      <Send className="size-3.5" />
-                      {path.status === "REJECTED" ? "Ajukan ulang" : "Ajukan akses"}
-                    </Button>
-                  )}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {path.courseCount} course
+                  </span>
                 </div>
-              );
-            })}
+
+                {path.joined ? (
+                  <span className="flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                    <CheckCircle2 className="size-3.5" />
+                    Diikuti
+                  </span>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setJoinPathName(path.name);
+                      setJoinOpen(true);
+                    }}
+                  >
+                    <KeyRound className="size-3.5" />
+                    Masukkan kode
+                  </Button>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>
+
+      <JoinPathDialog
+        open={joinOpen}
+        onOpenChange={setJoinOpen}
+        pathName={joinPathName}
+      />
     </div>
   );
-}
-
-function labelFor(status: "PENDING" | "APPROVED" | "REJECTED") {
-  const map = {
-    PENDING: "menunggu approval",
-    APPROVED: "diikuti",
-    REJECTED: "ditolak",
-  } as const;
-  return map[status];
 }

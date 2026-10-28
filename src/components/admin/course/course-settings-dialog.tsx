@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { Course, Path, Tag } from "@/types";
+import { api, type ApiEnvelope } from "@/lib/api-client";
+import type { Course, Paginated, Path, Tag } from "@/types";
 
 export type CourseSettingsValues = {
   title: string;
@@ -30,6 +32,7 @@ export type CourseSettingsValues = {
   status: Course["status"];
   passingGrade: number;
   pathId: string;
+  blockedByCourseId: string;
   tagIds: string[];
 };
 
@@ -56,7 +59,19 @@ export const CourseSettingsDialog = memo(function CourseSettingsDialog({
     status: course.status,
     passingGrade: course.passingGrade,
     pathId: course.pathId ?? "",
+    blockedByCourseId: course.blockedByCourseId ?? "",
     tagIds: (course.tags ?? []).map((tag) => tag.id),
+  });
+
+  const { data: courseOptions } = useQuery({
+    queryKey: ["courses", "options", course.pathId ?? "none"],
+    queryFn: async () => {
+      const { data } = await api.get<ApiEnvelope<Paginated<Course>>>("/courses", {
+        params: { perPage: 100, pathId: course.pathId ?? undefined },
+      });
+      return data.data.items.filter((item) => item.id !== course.id);
+    },
+    enabled: open,
   });
 
   useEffect(() => {
@@ -67,6 +82,7 @@ export const CourseSettingsDialog = memo(function CourseSettingsDialog({
       status: course.status,
       passingGrade: course.passingGrade,
       pathId: course.pathId ?? "",
+      blockedByCourseId: course.blockedByCourseId ?? "",
       tagIds: (course.tags ?? []).map((tag) => tag.id),
     });
   }, [open, course]);
@@ -105,6 +121,34 @@ export const CourseSettingsDialog = memo(function CourseSettingsDialog({
           }}
           className="flex flex-col gap-4"
         >
+          <div className="flex flex-col gap-2">
+            <Label>Prasyarat (Blocked by)</Label>
+            <Select
+              value={values.blockedByCourseId || "NONE"}
+              onValueChange={(value) =>
+                setValues((prev) => ({
+                  ...prev,
+                  blockedByCourseId: value === "NONE" ? "" : value,
+                }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Tidak ada prasyarat" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="NONE">Tidak ada prasyarat</SelectItem>
+                {(courseOptions ?? []).map((item) => (
+                  <SelectItem key={item.id} value={item.id}>
+                    {item.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Course ini baru terbuka setelah course prasyarat selesai 100%.
+            </p>
+          </div>
+
           <div className="flex flex-col gap-2">
             <Label htmlFor="course-title">
               Nama Course <span className="text-destructive">*</span>

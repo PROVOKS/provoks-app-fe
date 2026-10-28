@@ -216,6 +216,7 @@ export function CourseDetail({ courseId }: { courseId: string }) {
           status: values.status,
           passingGrade: values.passingGrade,
           pathId: values.pathId || null,
+          blockedByCourseId: values.blockedByCourseId || null,
           tagIds: values.tagIds,
         },
         { onSuccess: () => setSettingsOpen(false) },
