@@ -5,30 +5,42 @@ import { X } from "lucide-react";
 
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { AppTopbar } from "@/components/admin/app-topbar";
+import { cn } from "@/lib/utils";
 
-const SidebarSkeleton = () => (
-  <div className="h-full w-[248px] rounded-[20px] border border-border bg-card" />
-);
+function SidebarSkeleton({ collapsed }: { collapsed: boolean }) {
+  return (
+    <div
+      className={cn(
+        "h-full rounded-[20px] border border-border bg-card",
+        collapsed ? "w-[76px]" : "w-[248px]",
+      )}
+    />
+  );
+}
 
 /**
  * Kerangka halaman admin.
  *
- * - >= lg: sidebar menetap di kiri.
- * - < lg : sidebar jadi drawer, dibuka lewat tombol di topbar.
+ * - >= lg: sidebar menetap; tombol di dalam sidebar menciutkan jadi mini rail.
+ * - < lg : sidebar jadi drawer, dibuka lewat tombol hamburger di topbar.
  */
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
     <div className="flex h-dvh gap-4 overflow-hidden bg-muted/60 p-3 lg:gap-[18px] lg:p-[18px]">
       {/* sidebar tetap (desktop) */}
       <div className="hidden h-full shrink-0 lg:block">
-        <Suspense fallback={<SidebarSkeleton />}>
-          <AppSidebar />
+        <Suspense fallback={<SidebarSkeleton collapsed={collapsed} />}>
+          <AppSidebar
+            collapsed={collapsed}
+            onToggleCollapse={() => setCollapsed((value) => !value)}
+          />
         </Suspense>
       </div>
 
-      {/* drawer (mobile) */}
+      {/* drawer (mobile) — selalu versi lengkap */}
       {drawerOpen ? (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button
@@ -39,7 +51,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           />
           <div className="absolute inset-y-0 left-0 h-full p-3">
             <div className="relative h-full">
-              <Suspense fallback={<SidebarSkeleton />}>
+              <Suspense fallback={<SidebarSkeleton collapsed={false} />}>
                 <AppSidebar onNavigate={() => setDrawerOpen(false)} />
               </Suspense>
               <button

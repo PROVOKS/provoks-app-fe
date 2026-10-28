@@ -7,6 +7,8 @@ import {
   BookOpen,
   LayoutDashboard,
   PanelLeft,
+  PanelLeftClose,
+  PanelLeftOpen,
   Route,
   Tags,
   UserCheck,
@@ -44,12 +46,14 @@ function NavItem({
   icon: Icon,
   badge,
   onNavigate,
+  collapsed,
 }: {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
   onNavigate?: () => void;
+  collapsed?: boolean;
 }) {
   const pathname = usePathname();
   const active = isNavActive(pathname, href);
@@ -58,8 +62,10 @@ function NavItem({
     <Link
       href={href}
       onClick={onNavigate}
+      title={collapsed ? label : undefined}
       className={cn(
-        "flex h-9 items-center justify-between rounded-[10px] px-2.5 text-sm transition-colors",
+        "relative flex h-9 items-center rounded-[10px] text-sm transition-colors",
+        collapsed ? "justify-center px-0" : "justify-between px-2.5",
         active
           ? "bg-primary/10 font-semibold text-primary"
           : "text-foreground hover:bg-muted",
@@ -67,14 +73,19 @@ function NavItem({
     >
       <span className="flex items-center gap-2.5">
         <Icon
-          className={cn("size-4.5", active ? "text-primary" : "text-muted-foreground")}
+          className={cn("size-4.5 shrink-0", active ? "text-primary" : "text-muted-foreground")}
         />
-        {label}
+        {collapsed ? null : label}
       </span>
-      {badge ? (
+
+      {badge && !collapsed ? (
         <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">
           {badge}
         </span>
+      ) : null}
+
+      {badge && collapsed ? (
+        <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-primary" />
       ) : null}
     </Link>
   );
@@ -82,8 +93,13 @@ function NavItem({
 
 export function AppSidebar({
   onNavigate,
+  collapsed = false,
+  onToggleCollapse,
 }: {
   onNavigate?: () => void;
+  collapsed?: boolean;
+  /** kalau diisi, tombol ciutkan/perluas ditampilkan */
+  onToggleCollapse?: () => void;
 } = {}) {
   const { data: pendingRequests } = useQuery({
     queryKey: ["path-requests", "PENDING"],
@@ -97,32 +113,69 @@ export function AppSidebar({
   });
 
   return (
-    <aside className="flex h-full w-[248px] shrink-0 flex-col justify-between gap-4 overflow-y-auto rounded-[20px] border border-border bg-card p-4 shadow-sm">
+    <aside
+      className={cn(
+        "flex h-full shrink-0 flex-col justify-between gap-4 overflow-y-auto overflow-x-hidden rounded-[20px] border border-border bg-card shadow-sm transition-[width,padding] duration-200",
+        collapsed ? "w-[76px] p-2.5" : "w-[248px] p-4",
+      )}
+    >
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+        <div
+          className={cn(
+            "flex items-center",
+            collapsed ? "flex-col gap-2" : "justify-between",
+          )}
+        >
+          <div className={cn("flex items-center gap-2.5", collapsed && "justify-center")}>
             <BrandLogo className="h-[34px]" />
-            <span className="font-heading text-[17px] font-bold">Provoks</span>
+            {collapsed ? null : (
+              <span className="font-heading text-[17px] font-bold">Provoks</span>
+            )}
           </div>
-          <PanelLeft className="size-4.5 text-muted-foreground" />
+
+          {onToggleCollapse ? (
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              aria-label={collapsed ? "Perluas sidebar" : "Ciutkan sidebar"}
+              title={collapsed ? "Perluas sidebar" : "Ciutkan sidebar"}
+              className="grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-muted"
+            >
+              {collapsed ? (
+                <PanelLeftOpen className="size-4.5" />
+              ) : (
+                <PanelLeftClose className="size-4.5" />
+              )}
+            </button>
+          ) : (
+            <PanelLeft className="size-4.5 text-muted-foreground" />
+          )}
         </div>
 
         <nav className="flex flex-col gap-1">
           {MAIN_NAV.map((item) => (
-            <NavItem key={item.href} {...item} onNavigate={onNavigate} />
+            <NavItem
+              key={item.href}
+              {...item}
+              onNavigate={onNavigate}
+              collapsed={collapsed}
+            />
           ))}
         </nav>
 
         <div className="h-px bg-border" />
-        <p className="text-[11px] font-semibold tracking-wider text-muted-foreground">
-          MANAGE
-        </p>
+        {collapsed ? null : (
+          <p className="text-[11px] font-semibold tracking-wider text-muted-foreground">
+            MANAGE
+          </p>
+        )}
         <nav className="flex flex-col gap-1">
           {MANAGE_NAV.map((item) => (
             <NavItem
               key={item.href}
               {...item}
               onNavigate={onNavigate}
+              collapsed={collapsed}
               badge={
                 item.href === "/dashboard/path-requests" && pendingRequests
                   ? String(pendingRequests)
@@ -135,9 +188,11 @@ export function AppSidebar({
 
       <div className="flex flex-col gap-3">
         <nav className="flex flex-col gap-1">
-          <LogoutButton />
+          <LogoutButton compact={collapsed} />
         </nav>
-        <p className="text-[11px] text-muted-foreground">Provoks LMS v1.0</p>
+        {collapsed ? null : (
+          <p className="text-[11px] text-muted-foreground">Provoks LMS v1.0</p>
+        )}
       </div>
     </aside>
   );
