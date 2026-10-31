@@ -340,12 +340,9 @@ export default function CoursesPage() {
                     <TableCell>
                       <Link
                         href={`/dashboard/courses/${course.id}`}
-                        className="flex items-center gap-2.5"
+                        className="text-[13px] font-medium hover:underline"
                       >
-                        <span className="size-8 shrink-0 rounded-lg bg-secondary/25" />
-                        <span className="text-[13px] font-medium">
-                          {course.title}
-                        </span>
+                        {course.title}
                       </Link>
                     </TableCell>
                     <TableCell className="text-[13px] text-muted-foreground">

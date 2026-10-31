@@ -41,20 +41,6 @@ const STATUS_LABEL: Record<Path["status"], string> = {
   ARCHIVED: "Archived",
 };
 
-function TrackBadge({ isFastTrack }: { isFastTrack: boolean }) {
-  return (
-    <span
-      className={
-        isFastTrack
-          ? "rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary"
-          : "rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground"
-      }
-    >
-      {isFastTrack ? "Fast Track" : "Reguler"}
-    </span>
-  );
-}
-
 export default function PathsPage() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -250,7 +236,7 @@ export default function PathsPage() {
                       onCheckedChange={() => toggleAll(ids)}
                     />
                   </TableHead>
-                  {["PATH", "TIPE", "COURSE", "STATUS"].map((head) => (
+                  {["PATH", "COURSE", "STATUS"].map((head) => (
                     <TableHead
                       key={head}
                       className="text-[11px] font-semibold tracking-wider text-muted-foreground"
@@ -278,9 +264,6 @@ export default function PathsPage() {
                     </TableCell>
                     <TableCell className="text-[13px] font-medium">
                       {path.name}
-                    </TableCell>
-                    <TableCell>
-                      <TrackBadge isFastTrack={path.isFastTrack} />
                     </TableCell>
                     <TableCell className="text-[13px] text-muted-foreground">
                       {path.courseCount ?? 0} course

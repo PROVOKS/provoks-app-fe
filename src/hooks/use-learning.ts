@@ -42,6 +42,7 @@ export type MyCourse = {
   durationMinutes: number;
   path?: Path | null;
   tags?: Tag[];
+  isFastTrack?: boolean;
   enrolledAt?: string | null;
   /// terkunci karena course prasyarat belum selesai
   locked?: boolean;
@@ -105,7 +106,6 @@ export type LearningPath = {
   name: string;
   slug: string;
   description?: string | null;
-  isFastTrack: boolean;
   courseCount: number;
   /// true kalau siswa sudah bergabung lewat kode
   joined: boolean;

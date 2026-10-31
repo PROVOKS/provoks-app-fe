@@ -251,9 +251,6 @@ export default function MyLearningPage() {
                   <div className="flex min-w-0 flex-col gap-1">
                     <span className="flex flex-wrap items-center gap-2 text-[14px] font-semibold">
                       {path.name}
-                      <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
-                        {path.isFastTrack ? "Fast Track" : "Reguler"}
-                      </span>
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {path.courseCount} course

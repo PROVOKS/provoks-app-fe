@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -34,7 +33,6 @@ import type { Path } from "@/types";
 const schema = z.object({
   name: z.string().min(2, "Nama path minimal 2 karakter"),
   description: z.string().optional(),
-  isFastTrack: z.boolean(),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
 });
 
@@ -43,7 +41,6 @@ type FormValues = z.infer<typeof schema>;
 const EMPTY: FormValues = {
   name: "",
   description: "",
-  isFastTrack: false,
   status: "DRAFT",
 };
 
@@ -71,7 +68,6 @@ export function PathFormDialog({
         ? {
             name: path.name,
             description: path.description ?? "",
-            isFastTrack: path.isFastTrack,
             status: path.status,
           }
         : EMPTY,
@@ -131,19 +127,6 @@ export function PathFormDialog({
               rows={3}
               placeholder="Jelaskan tujuan dan cakupan path ini..."
               {...form.register("description")}
-            />
-          </div>
-
-          <div className="flex items-center justify-between gap-4 rounded-xl border border-border p-3.5">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[13px] font-medium">Fast Track</span>
-              <span className="text-xs text-muted-foreground">
-                Path intensif. Kalau mati = Reguler.
-              </span>
-            </div>
-            <Switch
-              checked={form.watch("isFastTrack")}
-              onCheckedChange={(checked) => form.setValue("isFastTrack", checked)}
             />
           </div>
 

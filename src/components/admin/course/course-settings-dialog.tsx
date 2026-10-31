@@ -30,6 +30,7 @@ export type CourseSettingsValues = {
   title: string;
   description: string;
   status: Course["status"];
+  isFastTrack: boolean;
   passingGrade: number;
   pathId: string;
   blockedByCourseId: string;
@@ -57,6 +58,7 @@ export const CourseSettingsDialog = memo(function CourseSettingsDialog({
     title: course.title,
     description: course.description ?? "",
     status: course.status,
+    isFastTrack: course.isFastTrack ?? false,
     passingGrade: course.passingGrade,
     pathId: course.pathId ?? "",
     blockedByCourseId: course.blockedByCourseId ?? "",
@@ -80,6 +82,7 @@ export const CourseSettingsDialog = memo(function CourseSettingsDialog({
       title: course.title,
       description: course.description ?? "",
       status: course.status,
+      isFastTrack: course.isFastTrack ?? false,
       passingGrade: course.passingGrade,
       pathId: course.pathId ?? "",
       blockedByCourseId: course.blockedByCourseId ?? "",
@@ -206,6 +209,27 @@ export const CourseSettingsDialog = memo(function CourseSettingsDialog({
                   <SelectItem value="DRAFT">Draft</SelectItem>
                   <SelectItem value="PUBLISHED">Published</SelectItem>
                   <SelectItem value="ARCHIVED">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label>Tipe</Label>
+              <Select
+                value={values.isFastTrack ? "FAST" : "REGULER"}
+                onValueChange={(value) =>
+                  setValues((prev) => ({
+                    ...prev,
+                    isFastTrack: value === "FAST",
+                  }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="REGULER">Reguler</SelectItem>
+                  <SelectItem value="FAST">Fast Track</SelectItem>
                 </SelectContent>
               </Select>
             </div>

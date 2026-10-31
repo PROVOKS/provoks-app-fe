@@ -214,6 +214,7 @@ export function CourseDetail({ courseId }: { courseId: string }) {
           title: values.title,
           description: values.description,
           status: values.status,
+          isFastTrack: values.isFastTrack,
           passingGrade: values.passingGrade,
           pathId: values.pathId || null,
           blockedByCourseId: values.blockedByCourseId || null,

@@ -16,8 +16,6 @@ export type Path = {
   name: string;
   slug: string;
   description?: string | null;
-  /** false = Reguler, true = Fast Track */
-  isFastTrack: boolean;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   courseCount?: number;
   createdAt: string;
@@ -63,7 +61,6 @@ export type PathRequest = {
     id: string;
     name: string;
     slug: string;
-    isFastTrack: boolean;
   };
 };
 
@@ -83,6 +80,8 @@ export type Course = {
   thumbnailUrl?: string | null;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   passingGrade: number;
+  /** false = Reguler, true = Fast Track */
+  isFastTrack?: boolean;
   pathId?: string | null;
   path?: Path | null;
   /// prasyarat: course ini terbuka setelah course tersebut selesai 100%
