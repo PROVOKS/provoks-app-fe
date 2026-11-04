@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, PanelLeft } from "lucide-react";
+import { LayoutDashboard } from "lucide-react";
 
-import { useAuth } from "@/components/providers/auth-provider";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { LogoutButton } from "@/components/shared/logout-button";
 import { cn } from "@/lib/utils";
@@ -54,18 +53,12 @@ function NavItem({
 }
 
 export function LearnerSidebar({ onNavigate }: { onNavigate?: () => void }) {
-  const { user } = useAuth();
-  const initials = (user?.name ?? "Siswa").charAt(0).toUpperCase();
-
   return (
     <aside className="flex h-full w-[248px] shrink-0 flex-col justify-between gap-4 overflow-y-auto rounded-[20px] border border-border bg-card p-4 shadow-sm">
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <BrandLogo className="h-[34px]" />
-            <span className="font-heading text-[17px] font-bold">Provoks</span>
-          </div>
-          <PanelLeft className="size-4.5 text-muted-foreground" />
+        <div className="flex items-center gap-2.5">
+          <BrandLogo className="h-[34px]" />
+          <span className="font-heading text-[17px] font-bold">Provoks</span>
         </div>
 
         <nav className="flex flex-col gap-1">
@@ -75,20 +68,7 @@ export function LearnerSidebar({ onNavigate }: { onNavigate?: () => void }) {
         </nav>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-2.5 rounded-xl bg-muted p-2.5">
-          <span className="grid size-[34px] place-items-center rounded-full bg-primary/10 font-heading text-[13px] font-bold text-primary">
-            {initials}
-          </span>
-          <div className="flex flex-col overflow-hidden">
-            <span className="truncate text-[13px] font-semibold">
-              {user?.name ?? "Siswa"}
-            </span>
-            <span className="text-[11px] text-muted-foreground">Siswa</span>
-          </div>
-        </div>
-        <LogoutButton />
-      </div>
+      <LogoutButton />
     </aside>
   );
 }
