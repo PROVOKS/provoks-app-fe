@@ -12,6 +12,7 @@ import { RowActions } from "@/components/admin/row-actions";
 import { buildStatusActions } from "@/components/admin/row-status-actions";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { DataTablePagination } from "@/components/ui/pagination";
 import {
@@ -30,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useRowSelection } from "@/hooks/use-row-selection";
 import { api, type ApiEnvelope } from "@/lib/api-client";
 import type { Course, Paginated, Path, Tag } from "@/types";
 
@@ -68,6 +70,8 @@ export default function CoursesPage() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
   const [deleting, setDeleting] = useState<Course | null>(null);
+
+  const { selected, toggle, toggleAll, clear } = useRowSelection();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["courses", page, perPage, search, status, pathId, tagId],
@@ -138,9 +142,13 @@ export default function CoursesPage() {
   });
 
   const courses = data?.items ?? [];
+  const ids = courses.map((course) => course.id);
+  const allChecked = ids.length > 0 && ids.every((id) => selected.has(id));
+  const someChecked = ids.some((id) => selected.has(id));
 
   function resetPage() {
     setPage(1);
+    clear();
   }
 
   return (
@@ -254,6 +262,13 @@ export default function CoursesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      aria-label="Pilih semua"
+                      checked={allChecked ? true : someChecked ? "indeterminate" : false}
+                      onCheckedChange={() => toggleAll(ids)}
+                    />
+                  </TableHead>
                   {["COURSE", "PATH", "TAG", "SISWA", "STATUS"].map((head) => (
                     <TableHead
                       key={head}
@@ -269,7 +284,17 @@ export default function CoursesPage() {
               </TableHeader>
               <TableBody>
                 {courses.map((course) => (
-                  <TableRow key={course.id}>
+                  <TableRow
+                    key={course.id}
+                    data-state={selected.has(course.id) ? "selected" : undefined}
+                  >
+                    <TableCell>
+                      <Checkbox
+                        aria-label={`Pilih ${course.title}`}
+                        checked={selected.has(course.id)}
+                        onCheckedChange={() => toggle(course.id)}
+                      />
+                    </TableCell>
                     <TableCell>
                       <Link
                         href={`/dashboard/courses/${course.id}`}
@@ -315,10 +340,14 @@ export default function CoursesPage() {
           <DataTablePagination
             meta={data.meta}
             itemLabel="course"
-            onPageChange={setPage}
+            onPageChange={(next) => {
+              setPage(next);
+              clear();
+            }}
             onPerPageChange={(value) => {
               setPerPage(value);
               setPage(1);
+              clear();
             }}
           />
         ) : null}

@@ -10,6 +10,7 @@ import { UserFormDialog } from "@/components/admin/user-form-dialog";
 import { UserImportDialog } from "@/components/admin/user-import-dialog";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { DataTablePagination } from "@/components/ui/pagination";
 import {
@@ -28,6 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useRowSelection } from "@/hooks/use-row-selection";
 import { useDeleteUser, useUpdateUser, useUsers } from "@/hooks/use-users";
 import { api, type ApiEnvelope } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
@@ -56,6 +58,8 @@ export default function UsersPage() {
   const [deleting, setDeleting] = useState<ManagedUser | null>(null);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
+
+  const { selected, toggle, toggleAll, clear } = useRowSelection();
 
   const { data, isLoading, isError } = useUsers({
     search: search || undefined,
@@ -95,6 +99,10 @@ export default function UsersPage() {
 
   const users = data?.items ?? [];
   const canDelete = currentUser?.role === "ADMIN";
+
+  const ids = users.map((item) => item.id);
+  const allChecked = ids.length > 0 && ids.every((id) => selected.has(id));
+  const someChecked = ids.some((id) => selected.has(id));
 
   function roleActions(item: ManagedUser) {
     if (!canDelete) return [];
@@ -216,6 +224,15 @@ export default function UsersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  {canDelete ? (
+                    <TableHead className="w-10">
+                      <Checkbox
+                        aria-label="Pilih semua"
+                        checked={allChecked ? true : someChecked ? "indeterminate" : false}
+                        onCheckedChange={() => toggleAll(ids)}
+                      />
+                    </TableHead>
+                  ) : null}
                   {["NAMA", "ROLE", "NIM", "PRODI", "PATH"].map((head) => (
                     <TableHead
                       key={head}
@@ -231,7 +248,19 @@ export default function UsersPage() {
               </TableHeader>
               <TableBody>
                 {users.map((item) => (
-                  <TableRow key={item.id}>
+                  <TableRow
+                    key={item.id}
+                    data-state={selected.has(item.id) ? "selected" : undefined}
+                  >
+                    {canDelete ? (
+                      <TableCell>
+                        <Checkbox
+                          aria-label={`Pilih ${item.name}`}
+                          checked={selected.has(item.id)}
+                          onCheckedChange={() => toggle(item.id)}
+                        />
+                      </TableCell>
+                    ) : null}
                     <TableCell className="text-[13px] font-medium">
                       {item.name}
                       <span className="block text-xs font-normal text-muted-foreground">
@@ -292,10 +321,14 @@ export default function UsersPage() {
           <DataTablePagination
             meta={data.meta}
             itemLabel="user"
-            onPageChange={setPage}
+            onPageChange={(next) => {
+              setPage(next);
+              clear();
+            }}
             onPerPageChange={(value) => {
               setPerPage(value);
               setPage(1);
+              clear();
             }}
           />
         ) : null}

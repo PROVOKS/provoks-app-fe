@@ -12,6 +12,7 @@ import { RowActions } from "@/components/admin/row-actions";
 import { buildStatusActions } from "@/components/admin/row-status-actions";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { DataTablePagination } from "@/components/ui/pagination";
 import {
@@ -30,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useRowSelection } from "@/hooks/use-row-selection";
 import { api, type ApiEnvelope } from "@/lib/api-client";
 import type { Paginated, Path } from "@/types";
 
@@ -52,6 +54,8 @@ export default function PathsPage() {
   const [status, setStatus] = useState<Path["status"] | "ALL">("ALL");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
+
+  const { selected, toggle, toggleAll, clear } = useRowSelection();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["paths", page, perPage, search, status],
@@ -100,9 +104,13 @@ export default function PathsPage() {
   });
 
   const paths = data?.items ?? [];
+  const ids = paths.map((path) => path.id);
+  const allChecked = ids.length > 0 && ids.every((id) => selected.has(id));
+  const someChecked = ids.some((id) => selected.has(id));
 
   function resetPage() {
     setPage(1);
+    clear();
   }
 
   function openCreate() {
@@ -179,6 +187,13 @@ export default function PathsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      aria-label="Pilih semua"
+                      checked={allChecked ? true : someChecked ? "indeterminate" : false}
+                      onCheckedChange={() => toggleAll(ids)}
+                    />
+                  </TableHead>
                   {["PATH", "COURSE", "STATUS"].map((head) => (
                     <TableHead
                       key={head}
@@ -194,7 +209,17 @@ export default function PathsPage() {
               </TableHeader>
               <TableBody>
                 {paths.map((path) => (
-                  <TableRow key={path.id}>
+                  <TableRow
+                    key={path.id}
+                    data-state={selected.has(path.id) ? "selected" : undefined}
+                  >
+                    <TableCell>
+                      <Checkbox
+                        aria-label={`Pilih ${path.name}`}
+                        checked={selected.has(path.id)}
+                        onCheckedChange={() => toggle(path.id)}
+                      />
+                    </TableCell>
                     <TableCell className="text-[13px] font-medium">
                       {path.name}
                     </TableCell>
@@ -232,10 +257,14 @@ export default function PathsPage() {
           <DataTablePagination
             meta={data.meta}
             itemLabel="path"
-            onPageChange={setPage}
+            onPageChange={(next) => {
+              setPage(next);
+              clear();
+            }}
             onPerPageChange={(value) => {
               setPerPage(value);
               setPage(1);
+              clear();
             }}
           />
         ) : null}
