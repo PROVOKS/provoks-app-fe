@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, Route } from "lucide-react";
 
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { LogoutButton } from "@/components/shared/logout-button";
@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 
 const MAIN_NAV = [
   { href: "/my-course", label: "My Learning", icon: LayoutDashboard },
+  { href: "/my-course/path", label: "Path", icon: Route },
 ];
 
 function isNavActive(pathname: string, href: string) {

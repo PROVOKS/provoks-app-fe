@@ -177,6 +177,10 @@ export type LearningPath = {
   enrollmentId: string | null;
 };
 
+export type LearningPathDetail = LearningPath & {
+  courses: MyCourse[];
+};
+
 export function useMyPaths() {
   return useQuery({
     queryKey: ["learning-paths"],
@@ -184,6 +188,20 @@ export function useMyPaths() {
       const { data } = await api.get<ApiEnvelope<LearningPath[]>>("/learning/paths");
       return data.data;
     },
+  });
+}
+
+/** Detail satu path + daftar course di dalamnya. */
+export function usePathDetail(slug: string) {
+  return useQuery({
+    queryKey: ["learning-path", slug],
+    queryFn: async () => {
+      const { data } = await api.get<ApiEnvelope<LearningPathDetail>>(
+        `/learning/paths/${slug}`,
+      );
+      return data.data;
+    },
+    enabled: Boolean(slug),
   });
 }
 
@@ -208,6 +226,7 @@ export function useJoinPath() {
           : `Berhasil bergabung ke ${result.path.name}`,
       );
       void queryClient.invalidateQueries({ queryKey: ["learning-paths"] });
+      void queryClient.invalidateQueries({ queryKey: ["learning-path"] });
       void queryClient.invalidateQueries({ queryKey: ["learning-my-courses"] });
     },
     onError: (error: Error) => toast.error(error.message),
