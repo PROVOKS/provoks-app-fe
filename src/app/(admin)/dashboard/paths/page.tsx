@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { KeyRound, Plus, Search } from "lucide-react";
+import { KeyRound, Plus, Search, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
 import { PathCodesDialog } from "@/components/admin/path-codes-dialog";
 import { PathFormDialog } from "@/components/admin/path-form-dialog";
+import { PathMentorsDialog } from "@/components/admin/path-mentors-dialog";
 import { RowActions } from "@/components/admin/row-actions";
 import { buildStatusActions } from "@/components/admin/row-status-actions";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -51,6 +52,7 @@ export default function PathsPage() {
   const [deleting, setDeleting] = useState<Path | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [codesPath, setCodesPath] = useState<Path | null>(null);
+  const [mentorsPath, setMentorsPath] = useState<Path | null>(null);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<Path["status"] | "ALL">("ALL");
   const [page, setPage] = useState(1);
@@ -155,10 +157,12 @@ export default function PathsPage() {
             Kelola learning path dan urutan course di dalamnya.
           </p>
         </div>
-        <Button size="sm" onClick={openCreate}>
-          <Plus className="size-4" />
-          Tambah Path
-        </Button>
+        {isAdmin ? (
+          <Button size="sm" onClick={openCreate}>
+            <Plus className="size-4" />
+            Tambah Path
+          </Button>
+        ) : null}
       </div>
 
       <div className="rounded-[20px] border border-border bg-card p-4 sm:p-6">
@@ -243,8 +247,13 @@ export default function PathsPage() {
                         onCheckedChange={() => toggle(path.id)}
                       />
                     </TableCell>
-                    <TableCell className="text-[13px] font-medium">
-                      {path.name}
+                    <TableCell>
+                      <span className="text-[13px] font-medium">
+                        {path.name}
+                      </span>
+                      <span className="block text-[11px] text-muted-foreground">
+                        {path.mentorCount ?? 0} mentor
+                      </span>
                     </TableCell>
                     <TableCell className="text-[13px] text-muted-foreground">
                       {path.courseCount ?? 0} course
@@ -262,6 +271,15 @@ export default function PathsPage() {
                             icon: <KeyRound />,
                             onSelect: () => setCodesPath(path),
                           },
+                          ...(isAdmin
+                            ? [
+                                {
+                                  label: "Kelola Mentor",
+                                  icon: <Users />,
+                                  onSelect: () => setMentorsPath(path),
+                                },
+                              ]
+                            : []),
                           ...buildStatusActions(path.status, (next) =>
                             changeStatus.mutate({ id: path.id, status: next }),
                           ),
@@ -284,7 +302,7 @@ export default function PathsPage() {
                             { showAll: true },
                           ),
                         ]}
-                        onEdit={() => openEdit(path)}
+                        onEdit={isAdmin ? () => openEdit(path) : undefined}
                         onDelete={isAdmin ? () => setDeleting(path) : undefined}
                         onBulkDelete={
                           isAdmin ? () => setBulkDeleting(true) : undefined
@@ -323,6 +341,14 @@ export default function PathsPage() {
           if (!next) setCodesPath(null);
         }}
         path={codesPath}
+      />
+
+      <PathMentorsDialog
+        open={Boolean(mentorsPath)}
+        onOpenChange={(next) => {
+          if (!next) setMentorsPath(null);
+        }}
+        path={mentorsPath}
       />
 
       <ConfirmDeleteDialog

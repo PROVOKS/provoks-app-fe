@@ -18,6 +18,7 @@ export type Path = {
   description?: string | null;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   courseCount?: number;
+  mentorCount?: number;
   createdAt: string;
 };
 

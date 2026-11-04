@@ -60,7 +60,9 @@ export default function LoginPage() {
       router.push(next && next.startsWith("/") ? next : homeFor(user.role));
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Gagal masuk dengan Google");
+      toast.error(
+        error instanceof Error ? error.message : "Gagal masuk dengan Google",
+      );
     } finally {
       setIsGoogleSubmitting(false);
     }
@@ -84,20 +86,21 @@ export default function LoginPage() {
           </h1>
           <p className="text-base/6 opacity-85">
             Learning Management System yang dibuat untuk mendukung pembelajaran
-            di setiap path Provoks - dari fundamental sampai siap kerja.
+            di setiap path Provoks - dari fundamental sampai ahli.
           </p>
           <ul className="flex flex-col gap-3 text-[15px]">
             <li className="flex items-center gap-2.5">
               <CheckCircle2 className="size-4.5 text-accent" />
-              Path terstruktur: Frontend, Backend, Full-Stack
+              Path terstruktur: Web Development, Mobile Development, dan UI/UX
+              Design
             </li>
             <li className="flex items-center gap-2.5">
               <CheckCircle2 className="size-4.5 text-accent" />
-              Kelas interaktif berbasis proyek
+              Kelas interaktif
             </li>
             <li className="flex items-center gap-2.5">
               <CheckCircle2 className="size-4.5 text-accent" />
-              Sertifikat resmi & mentor praktisi
+              Proyek praktik untuk membangun portofolio
             </li>
           </ul>
         </div>
@@ -170,7 +173,11 @@ export default function LoginPage() {
             </a>
           </div>
 
-          <Button type="submit" size="lg" disabled={isSubmitting || isGoogleSubmitting}>
+          <Button
+            type="submit"
+            size="lg"
+            disabled={isSubmitting || isGoogleSubmitting}
+          >
             {isSubmitting ? "Memproses..." : "Masuk"}
           </Button>
 
