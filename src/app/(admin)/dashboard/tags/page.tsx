@@ -34,6 +34,7 @@ export default function TagsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Tag | null>(null);
   const [deleting, setDeleting] = useState<Tag | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
@@ -59,6 +60,24 @@ export default function TagsPage() {
       void queryClient.invalidateQueries({ queryKey: ["tags"] });
       void queryClient.invalidateQueries({ queryKey: ["stats"] });
       setDeleting(null);
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const bulk = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { data } = await api.post<ApiEnvelope<{ affected: number }>>(
+        "/tags/bulk",
+        { action: "delete", ids },
+      );
+      return data.data;
+    },
+    onSuccess: (result) => {
+      toast.success(`${result.affected} tag dihapus`);
+      void queryClient.invalidateQueries({ queryKey: ["tags"] });
+      void queryClient.invalidateQueries({ queryKey: ["stats"] });
+      clear();
+      setBulkDeleting(false);
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -179,8 +198,12 @@ export default function TagsPage() {
                     <TableCell>
                       <RowActions
                         label={`Aksi ${tag.name}`}
+                        selectionCount={selected.size}
                         onEdit={() => openEdit(tag)}
                         onDelete={isAdmin ? () => setDeleting(tag) : undefined}
+                        onBulkDelete={
+                          isAdmin ? () => setBulkDeleting(true) : undefined
+                        }
                       />
                     </TableCell>
                   </TableRow>
@@ -218,6 +241,15 @@ export default function TagsPage() {
         description="Tag akan dilepas dari semua course yang memakainya. Tindakan ini tidak bisa dibatalkan."
         isPending={remove.isPending}
         onConfirm={() => deleting && remove.mutate(deleting.id)}
+      />
+
+      <ConfirmDeleteDialog
+        open={bulkDeleting}
+        onOpenChange={setBulkDeleting}
+        title={`Hapus ${selected.size} tag?`}
+        description="Tag terpilih akan dilepas dari semua course yang memakainya."
+        isPending={bulk.isPending}
+        onConfirm={() => bulk.mutate([...selected])}
       />
     </div>
   );

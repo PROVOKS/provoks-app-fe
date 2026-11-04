@@ -19,19 +19,36 @@ export type RowAction = {
 };
 
 type RowActionsProps = {
-  /** Aksi khusus baris (ubah status, kode akses, ubah role, dst). */
+  /** Aksi khusus satu baris (kode akses, ubah status, ubah role, dst). */
   actions?: RowAction[];
+  /**
+   * Aksi saat ada baris yang dicentang (mode massal).
+   * Kalau diisi, isinya menggantikan `actions` selama `selectionCount > 0`.
+   */
+  bulkActions?: RowAction[];
+  /** Jumlah baris terpilih. > 0 berarti mode aksi massal. */
+  selectionCount?: number;
   onEdit?: () => void;
+  /** Hapus baris ini saja. */
   onDelete?: () => void;
+  /** Hapus semua baris terpilih. */
+  onBulkDelete?: () => void;
   label?: string;
 };
 
 export function RowActions({
   actions = [],
+  bulkActions = [],
+  selectionCount = 0,
   onEdit,
   onDelete,
+  onBulkDelete,
   label = "Aksi baris",
 }: RowActionsProps) {
+  const isBulk = selectionCount > 0;
+  const items = isBulk ? bulkActions : actions;
+  const canDelete = isBulk ? Boolean(onBulkDelete) : Boolean(onDelete);
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -44,8 +61,8 @@ export function RowActions({
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-48">
-        {actions.map((action) => (
+      <DropdownMenuContent align="end" className="w-52">
+        {items.map((action) => (
           <DropdownMenuItem
             key={action.label}
             disabled={action.disabled}
@@ -57,21 +74,24 @@ export function RowActions({
           </DropdownMenuItem>
         ))}
 
-        {actions.length > 0 && onEdit ? <DropdownMenuSeparator /> : null}
+        {items.length > 0 && onEdit ? <DropdownMenuSeparator /> : null}
 
         {onEdit ? (
-          <DropdownMenuItem onClick={onEdit}>
+          <DropdownMenuItem disabled={isBulk} onClick={onEdit}>
             <Pencil />
             Edit
           </DropdownMenuItem>
         ) : null}
 
-        {onDelete ? (
+        {canDelete ? (
           <>
-            {actions.length > 0 || onEdit ? <DropdownMenuSeparator /> : null}
-            <DropdownMenuItem variant="destructive" onClick={onDelete}>
+            {items.length > 0 || onEdit ? <DropdownMenuSeparator /> : null}
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={isBulk ? onBulkDelete : onDelete}
+            >
               <Trash2 />
-              Hapus
+              {isBulk ? `Hapus ${selectionCount} baris` : "Hapus"}
             </DropdownMenuItem>
           </>
         ) : null}

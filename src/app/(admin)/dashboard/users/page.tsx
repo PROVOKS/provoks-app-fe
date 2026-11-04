@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GraduationCap, Plus, Presentation, Search, ShieldCheck, Upload } from "lucide-react";
+import { toast } from "sonner";
 
 import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
 import { RowActions } from "@/components/admin/row-actions";
@@ -49,6 +50,7 @@ const ROLE_CHIP: Record<Role, string> = {
 
 export default function UsersPage() {
   const { user: currentUser } = useAuth();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [role, setRole] = useState<Role | "ALL">("ALL");
   const [pathId, setPathId] = useState<string>("ALL");
@@ -58,6 +60,7 @@ export default function UsersPage() {
   const [deleting, setDeleting] = useState<ManagedUser | null>(null);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const { selected, toggle, toggleAll, clear } = useRowSelection();
 
@@ -97,6 +100,28 @@ export default function UsersPage() {
   const remove = useDeleteUser();
   const updateUser = useUpdateUser();
 
+  const bulk = useMutation({
+    mutationFn: async (payload: {
+      action: "delete" | "role";
+      ids: string[];
+      role?: Role;
+    }) => {
+      const { data } = await api.post<ApiEnvelope<{ affected: number }>>(
+        "/users/bulk",
+        payload,
+      );
+      return data.data;
+    },
+    onSuccess: (result) => {
+      toast.success(`${result.affected} user diperbarui`);
+      void queryClient.invalidateQueries({ queryKey: ["users"] });
+      void queryClient.invalidateQueries({ queryKey: ["stats"] });
+      clear();
+      setBulkDeleting(false);
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
   const users = data?.items ?? [];
   const canDelete = currentUser?.role === "ADMIN";
 
@@ -104,36 +129,41 @@ export default function UsersPage() {
   const allChecked = ids.length > 0 && ids.every((id) => selected.has(id));
   const someChecked = ids.some((id) => selected.has(id));
 
-  function roleActions(item: ManagedUser) {
+  /** `bulk` = true -> aksi berlaku untuk semua baris terpilih. */
+  function roleActions(item: ManagedUser, isBulk = false) {
     if (!canDelete) return [];
 
+    const show = (role: Role) => isBulk || item.role !== role;
+    const changeRole = (role: Role) =>
+      isBulk
+        ? bulk.mutate({ action: "role", ids: [...selected], role })
+        : updateUser.mutate({ id: item.id, role });
+
     return [
-      ...(item.role !== "ADMIN"
+      ...(show("ADMIN")
         ? [
             {
               label: "Jadikan Admin",
               icon: <ShieldCheck />,
-              onSelect: () => updateUser.mutate({ id: item.id, role: "ADMIN" }),
+              onSelect: () => changeRole("ADMIN"),
             },
           ]
         : []),
-      ...(item.role !== "INSTRUCTOR"
+      ...(show("INSTRUCTOR")
         ? [
             {
               label: "Jadikan Instruktur",
               icon: <Presentation />,
-              onSelect: () =>
-                updateUser.mutate({ id: item.id, role: "INSTRUCTOR" }),
+              onSelect: () => changeRole("INSTRUCTOR"),
             },
           ]
         : []),
-      ...(item.role !== "STUDENT"
+      ...(show("STUDENT")
         ? [
             {
               label: "Jadikan Siswa",
               icon: <GraduationCap />,
-              onSelect: () =>
-                updateUser.mutate({ id: item.id, role: "STUDENT" }),
+              onSelect: () => changeRole("STUDENT"),
             },
           ]
         : []),
@@ -302,12 +332,17 @@ export default function UsersPage() {
                     <TableCell>
                       <RowActions
                         label={`Aksi ${item.name}`}
+                        selectionCount={selected.size}
                         actions={roleActions(item)}
+                        bulkActions={roleActions(item, true)}
                         onEdit={() => {
                           setEditing(item);
                           setFormOpen(true);
                         }}
                         onDelete={canDelete ? () => setDeleting(item) : undefined}
+                        onBulkDelete={
+                          canDelete ? () => setBulkDeleting(true) : undefined
+                        }
                       />
                     </TableCell>
                   </TableRow>
@@ -358,6 +393,17 @@ export default function UsersPage() {
           if (!deleting) return;
           remove.mutate(deleting.id, { onSuccess: () => setDeleting(null) });
         }}
+      />
+
+      <ConfirmDeleteDialog
+        open={bulkDeleting}
+        onOpenChange={setBulkDeleting}
+        title={`Hapus ${selected.size} user?`}
+        description="Semua akun terpilih beserta enrollment dan progresnya akan dihapus permanen."
+        isPending={bulk.isPending}
+        onConfirm={() =>
+          bulk.mutate({ action: "delete", ids: [...selected] })
+        }
       />
     </div>
   );

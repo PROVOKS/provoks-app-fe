@@ -70,6 +70,7 @@ export default function CoursesPage() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
   const [deleting, setDeleting] = useState<Course | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const { selected, toggle, toggleAll, clear } = useRowSelection();
 
@@ -137,6 +138,28 @@ export default function CoursesPage() {
       toast.success("Status course diperbarui");
       void queryClient.invalidateQueries({ queryKey: ["courses"] });
       void queryClient.invalidateQueries({ queryKey: ["stats"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const bulk = useMutation({
+    mutationFn: async (payload: {
+      action: "status" | "delete";
+      ids: string[];
+      status?: Course["status"];
+    }) => {
+      const { data } = await api.post<ApiEnvelope<{ affected: number }>>(
+        "/courses/bulk",
+        payload,
+      );
+      return data.data;
+    },
+    onSuccess: (result) => {
+      toast.success(`${result.affected} course diperbarui`);
+      void queryClient.invalidateQueries({ queryKey: ["courses"] });
+      void queryClient.invalidateQueries({ queryKey: ["stats"] });
+      clear();
+      setBulkDeleting(false);
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -320,12 +343,26 @@ export default function CoursesPage() {
                     <TableCell>
                       <RowActions
                         label={`Aksi ${course.title}`}
+                        selectionCount={selected.size}
                         actions={buildStatusActions(course.status, (next) =>
                           changeStatus.mutate({ id: course.id, status: next }),
+                        )}
+                        bulkActions={buildStatusActions(
+                          course.status,
+                          (next) =>
+                            bulk.mutate({
+                              action: "status",
+                              ids: [...selected],
+                              status: next,
+                            }),
+                          { showAll: true },
                         )}
                         onEdit={() => router.push(`/dashboard/courses/${course.id}`)}
                         onDelete={
                           isAdmin ? () => setDeleting(course) : undefined
+                        }
+                        onBulkDelete={
+                          isAdmin ? () => setBulkDeleting(true) : undefined
                         }
                       />
                     </TableCell>
@@ -362,6 +399,17 @@ export default function CoursesPage() {
         description="Course beserta silabus dan progres siswa akan dihapus permanen."
         isPending={remove.isPending}
         onConfirm={() => deleting && remove.mutate(deleting.id)}
+      />
+
+      <ConfirmDeleteDialog
+        open={bulkDeleting}
+        onOpenChange={setBulkDeleting}
+        title={`Hapus ${selected.size} course?`}
+        description="Semua course terpilih beserta silabus dan progres siswa akan dihapus permanen."
+        isPending={bulk.isPending}
+        onConfirm={() =>
+          bulk.mutate({ action: "delete", ids: [...selected] })
+        }
       />
     </div>
   );

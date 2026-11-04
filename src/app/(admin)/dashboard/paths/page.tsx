@@ -49,6 +49,7 @@ export default function PathsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Path | null>(null);
   const [deleting, setDeleting] = useState<Path | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [codesPath, setCodesPath] = useState<Path | null>(null);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<Path["status"] | "ALL">("ALL");
@@ -99,6 +100,28 @@ export default function PathsPage() {
       toast.success("Status path diperbarui");
       void queryClient.invalidateQueries({ queryKey: ["paths"] });
       void queryClient.invalidateQueries({ queryKey: ["stats"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const bulk = useMutation({
+    mutationFn: async (payload: {
+      action: "status" | "delete";
+      ids: string[];
+      status?: Path["status"];
+    }) => {
+      const { data } = await api.post<ApiEnvelope<{ affected: number }>>(
+        "/paths/bulk",
+        payload,
+      );
+      return data.data;
+    },
+    onSuccess: (result) => {
+      toast.success(`${result.affected} path diperbarui`);
+      void queryClient.invalidateQueries({ queryKey: ["paths"] });
+      void queryClient.invalidateQueries({ queryKey: ["stats"] });
+      clear();
+      setBulkDeleting(false);
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -232,6 +255,7 @@ export default function PathsPage() {
                     <TableCell>
                       <RowActions
                         label={`Aksi ${path.name}`}
+                        selectionCount={selected.size}
                         actions={[
                           {
                             label: "Kode akses",
@@ -242,8 +266,29 @@ export default function PathsPage() {
                             changeStatus.mutate({ id: path.id, status: next }),
                           ),
                         ]}
+                        bulkActions={[
+                          {
+                            label: "Kode akses",
+                            icon: <KeyRound />,
+                            onSelect: () => {},
+                            disabled: true,
+                          },
+                          ...buildStatusActions(
+                            path.status,
+                            (next) =>
+                              bulk.mutate({
+                                action: "status",
+                                ids: [...selected],
+                                status: next,
+                              }),
+                            { showAll: true },
+                          ),
+                        ]}
                         onEdit={() => openEdit(path)}
                         onDelete={isAdmin ? () => setDeleting(path) : undefined}
+                        onBulkDelete={
+                          isAdmin ? () => setBulkDeleting(true) : undefined
+                        }
                       />
                     </TableCell>
                   </TableRow>
@@ -289,6 +334,17 @@ export default function PathsPage() {
         description="Path beserta relasinya akan dihapus permanen. Tindakan ini tidak bisa dibatalkan."
         isPending={remove.isPending}
         onConfirm={() => deleting && remove.mutate(deleting.id)}
+      />
+
+      <ConfirmDeleteDialog
+        open={bulkDeleting}
+        onOpenChange={setBulkDeleting}
+        title={`Hapus ${selected.size} path?`}
+        description="Semua path terpilih beserta relasinya akan dihapus permanen."
+        isPending={bulk.isPending}
+        onConfirm={() =>
+          bulk.mutate({ action: "delete", ids: [...selected] })
+        }
       />
     </div>
   );

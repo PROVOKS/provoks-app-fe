@@ -7,14 +7,18 @@ type PublishStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 /**
  * Aksi ubah status untuk dropdown aksi baris.
  * Status yang sedang aktif tidak ditampilkan supaya tidak jadi aksi tanpa efek.
+ * `showAll` dipakai untuk aksi massal (status tiap baris bisa berbeda).
  */
 export function buildStatusActions(
   current: PublishStatus,
   onChange: (status: PublishStatus) => void,
+  options: { showAll?: boolean } = {},
 ): RowAction[] {
   const items: RowAction[] = [];
+  const show = (status: PublishStatus) =>
+    options.showAll === true || current !== status;
 
-  if (current !== "PUBLISHED") {
+  if (show("PUBLISHED")) {
     items.push({
       label: "Publikasikan",
       icon: <Send />,
@@ -22,7 +26,7 @@ export function buildStatusActions(
     });
   }
 
-  if (current !== "DRAFT") {
+  if (show("DRAFT")) {
     items.push({
       label: "Jadikan Draft",
       icon: <FilePen />,
@@ -30,7 +34,7 @@ export function buildStatusActions(
     });
   }
 
-  if (current !== "ARCHIVED") {
+  if (show("ARCHIVED")) {
     items.push({
       label: "Arsipkan",
       icon: <Archive />,
