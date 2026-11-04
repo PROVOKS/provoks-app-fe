@@ -288,7 +288,7 @@ export function QuizAttempt({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex h-15 items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-col gap-1">
           <h1 className="font-heading text-2xl font-bold">{quiz.title}</h1>
           <p className="text-[13px] text-muted-foreground">
@@ -298,7 +298,7 @@ export function QuizAttempt({
               : ` · percobaan ke-${attempt.attemptNumber}`}
           </p>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary" className="gap-1.5">
             <List className="size-3" />
             Soal {index + 1} dari {total}
@@ -310,7 +310,7 @@ export function QuizAttempt({
         </div>
       </div>
 
-      <div className="grid grid-cols-[1fr_340px] items-start gap-[18px]">
+      <div className="grid grid-cols-1 items-start gap-[18px] lg:grid-cols-[1fr_340px]">
         <Card className="rounded-2xl p-7">
           <CardContent className="flex flex-col gap-5 p-0">
             <div className="flex items-center gap-2.5">

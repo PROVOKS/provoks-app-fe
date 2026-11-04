@@ -2,15 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Award,
-  Grid2x2,
-  HelpCircle,
-  LayoutDashboard,
-  PanelLeft,
-  Settings,
-  User,
-} from "lucide-react";
+import { LayoutDashboard, PanelLeft } from "lucide-react";
 
 import { useAuth } from "@/components/providers/auth-provider";
 import { BrandLogo } from "@/components/shared/brand-logo";
@@ -19,14 +11,6 @@ import { cn } from "@/lib/utils";
 
 const MAIN_NAV = [
   { href: "/my-course", label: "My Learning", icon: LayoutDashboard },
-  { href: "/my-course/catalog", label: "Katalog", icon: Grid2x2 },
-  { href: "/my-course/certificates", label: "Certificates", icon: Award },
-  { href: "/my-course/profile", label: "Profil", icon: User },
-];
-
-const BOTTOM_NAV = [
-  { href: "/my-course/help", label: "Bantuan", icon: HelpCircle },
-  { href: "/my-course/settings", label: "Pengaturan", icon: Settings },
 ];
 
 function isNavActive(pathname: string, href: string) {
@@ -40,10 +24,12 @@ function NavItem({
   href,
   label,
   icon: Icon,
+  onNavigate,
 }: {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  onNavigate?: () => void;
 }) {
   const pathname = usePathname();
   const active = isNavActive(pathname, href);
@@ -51,6 +37,7 @@ function NavItem({
   return (
     <Link
       href={href}
+      onClick={onNavigate}
       className={cn(
         "flex h-9 items-center gap-2.5 rounded-[10px] px-2.5 text-sm transition-colors",
         active
@@ -66,7 +53,7 @@ function NavItem({
   );
 }
 
-export function LearnerSidebar() {
+export function LearnerSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { user } = useAuth();
   const initials = (user?.name ?? "Siswa").charAt(0).toUpperCase();
 
@@ -83,17 +70,7 @@ export function LearnerSidebar() {
 
         <nav className="flex flex-col gap-1">
           {MAIN_NAV.map((item) => (
-            <NavItem key={item.href} {...item} />
-          ))}
-        </nav>
-
-        <div className="h-px bg-border" />
-        <p className="text-[11px] font-semibold tracking-wider text-muted-foreground">
-          LAINNYA
-        </p>
-        <nav className="flex flex-col gap-1">
-          {BOTTOM_NAV.map((item) => (
-            <NavItem key={item.href} {...item} />
+            <NavItem key={item.href} {...item} onNavigate={onNavigate} />
           ))}
         </nav>
       </div>

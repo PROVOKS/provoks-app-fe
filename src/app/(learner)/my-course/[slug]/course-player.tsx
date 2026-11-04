@@ -59,8 +59,8 @@ export function CoursePlayer({ slug }: { slug: string }) {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-[320px_1fr] gap-[18px]">
-        <Skeleton className="h-[600px]" />
+      <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-[320px_1fr]">
+        <Skeleton className="h-[420px] lg:h-[600px]" />
         <Skeleton className="h-[600px]" />
       </div>
     );
@@ -96,7 +96,7 @@ export function CoursePlayer({ slug }: { slug: string }) {
   return (
     <div className="flex flex-col gap-4">
       {/* Progress course */}
-      <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4">
+      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:gap-4">
         <div className="flex min-w-0 flex-col gap-1">
           <span className="truncate font-heading text-[15px] font-semibold">
             {course.title}
@@ -118,9 +118,9 @@ export function CoursePlayer({ slug }: { slug: string }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-[320px_1fr] items-start gap-[18px]">
+      <div className="grid grid-cols-1 items-start gap-[18px] lg:grid-cols-[320px_1fr]">
         {/* Silabus */}
-        <div className="sticky top-0 flex max-h-[calc(100vh-180px)] flex-col gap-3.5 overflow-y-auto rounded-2xl border border-border bg-card p-4">
+        <div className="flex max-h-[45vh] flex-col gap-3.5 overflow-y-auto rounded-2xl border border-border bg-card p-4 lg:sticky lg:top-0 lg:max-h-[calc(100vh-180px)]">
           <div className="flex flex-col gap-0.5">
             <p className="font-heading text-[15px] font-semibold">Silabus</p>
             <p className="text-xs text-muted-foreground">{course.title}</p>

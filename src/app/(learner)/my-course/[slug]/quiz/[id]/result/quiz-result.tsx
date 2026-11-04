@@ -62,7 +62,7 @@ export function QuizResult({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex h-15 items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-col gap-1">
           <h1 className="font-heading text-2xl font-bold">Hasil Quiz</h1>
           <p className="text-[13px] text-muted-foreground">
@@ -75,7 +75,7 @@ export function QuizResult({
         </Badge>
       </div>
 
-      <div className="grid grid-cols-[420px_1fr] items-start gap-[18px]">
+      <div className="grid grid-cols-1 items-start gap-[18px] lg:grid-cols-[420px_1fr]">
         <Card className="rounded-2xl p-6">
           <CardContent className="flex flex-col items-center gap-5 p-0">
             <span
