@@ -2,16 +2,14 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, Trash2 } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 
-import { BulkActionBar } from "@/components/admin/bulk-action-bar";
 import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
 import { RowActions } from "@/components/admin/row-actions";
 import { TagFormDialog } from "@/components/admin/tag-form-dialog";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { DataTablePagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,7 +21,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useBulkAction, useRowSelection } from "@/hooks/use-bulk";
 import { api, type ApiEnvelope } from "@/lib/api-client";
 import type { Paginated, Tag } from "@/types";
 
@@ -35,12 +32,9 @@ export default function TagsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Tag | null>(null);
   const [deleting, setDeleting] = useState<Tag | null>(null);
-  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
-
-  const { selected, toggle, toggleAll, clear } = useRowSelection();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["tags", page, perPage, search],
@@ -65,16 +59,10 @@ export default function TagsPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
-  const bulk = useBulkAction("/tags/bulk", [["tags"], ["stats"]]);
-
   const tags = data?.items ?? [];
-  const ids = tags.map((tag) => tag.id);
-  const allChecked = ids.length > 0 && ids.every((id) => selected.has(id));
-  const someChecked = ids.some((id) => selected.has(id));
 
   function resetPage() {
     setPage(1);
-    clear();
   }
 
   function openCreate() {
@@ -118,20 +106,6 @@ export default function TagsPage() {
           </div>
         </div>
 
-        <BulkActionBar count={selected.size} onClear={clear}>
-          {isAdmin ? (
-            <Button
-              size="sm"
-              variant="destructive"
-              disabled={bulk.isPending}
-              onClick={() => setBulkDeleting(true)}
-            >
-              <Trash2 className="size-3.5" />
-              Hapus
-            </Button>
-          ) : null}
-        </BulkActionBar>
-
         <div className="mt-4">
           {isLoading ? (
             <Skeleton className="h-40 w-full" />
@@ -147,13 +121,6 @@ export default function TagsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-10">
-                    <Checkbox
-                      aria-label="Pilih semua"
-                      checked={allChecked ? true : someChecked ? "indeterminate" : false}
-                      onCheckedChange={() => toggleAll(ids)}
-                    />
-                  </TableHead>
                   {["TAG", "SLUG", "KATEGORI", "COURSE"].map((head) => (
                     <TableHead
                       key={head}
@@ -169,17 +136,7 @@ export default function TagsPage() {
               </TableHeader>
               <TableBody>
                 {tags.map((tag) => (
-                  <TableRow
-                    key={tag.id}
-                    data-state={selected.has(tag.id) ? "selected" : undefined}
-                  >
-                    <TableCell>
-                      <Checkbox
-                        aria-label={`Pilih ${tag.name}`}
-                        checked={selected.has(tag.id)}
-                        onCheckedChange={() => toggle(tag.id)}
-                      />
-                    </TableCell>
+                  <TableRow key={tag.id}>
                     <TableCell>
                       <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">
                         {tag.name}
@@ -212,14 +169,10 @@ export default function TagsPage() {
           <DataTablePagination
             meta={data.meta}
             itemLabel="tag"
-            onPageChange={(next) => {
-              setPage(next);
-              clear();
-            }}
+            onPageChange={setPage}
             onPerPageChange={(value) => {
               setPerPage(value);
               setPage(1);
-              clear();
             }}
           />
         ) : null}
@@ -236,25 +189,6 @@ export default function TagsPage() {
         description="Tag akan dilepas dari semua course yang memakainya. Tindakan ini tidak bisa dibatalkan."
         isPending={remove.isPending}
         onConfirm={() => deleting && remove.mutate(deleting.id)}
-      />
-
-      <ConfirmDeleteDialog
-        open={bulkDeleting}
-        onOpenChange={setBulkDeleting}
-        title={`Hapus ${selected.size} tag?`}
-        description="Tag terpilih akan dilepas dari semua course yang memakainya."
-        isPending={bulk.isPending}
-        onConfirm={() =>
-          bulk.mutate(
-            { action: "delete", ids: [...selected] },
-            {
-              onSuccess: () => {
-                clear();
-                setBulkDeleting(false);
-              },
-            },
-          )
-        }
       />
     </div>
   );

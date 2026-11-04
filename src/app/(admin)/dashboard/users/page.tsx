@@ -2,16 +2,14 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, Trash2, Upload } from "lucide-react";
+import { GraduationCap, Plus, Presentation, Search, ShieldCheck, Upload } from "lucide-react";
 
-import { BulkActionBar } from "@/components/admin/bulk-action-bar";
 import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
 import { RowActions } from "@/components/admin/row-actions";
 import { UserFormDialog } from "@/components/admin/user-form-dialog";
 import { UserImportDialog } from "@/components/admin/user-import-dialog";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { DataTablePagination } from "@/components/ui/pagination";
 import {
@@ -30,8 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useBulkAction, useRowSelection } from "@/hooks/use-bulk";
-import { useDeleteUser, useUsers } from "@/hooks/use-users";
+import { useDeleteUser, useUpdateUser, useUsers } from "@/hooks/use-users";
 import { api, type ApiEnvelope } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import type { ManagedUser, Paginated, Path, Role } from "@/types";
@@ -59,9 +56,6 @@ export default function UsersPage() {
   const [deleting, setDeleting] = useState<ManagedUser | null>(null);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
-  const [bulkDeleting, setBulkDeleting] = useState(false);
-
-  const { selected, toggle, toggleAll, clear } = useRowSelection();
 
   const { data, isLoading, isError } = useUsers({
     search: search || undefined,
@@ -97,14 +91,46 @@ export default function UsersPage() {
   });
 
   const remove = useDeleteUser();
-  const bulk = useBulkAction("/users/bulk", [["users"], ["stats"]]);
+  const updateUser = useUpdateUser();
 
   const users = data?.items ?? [];
   const canDelete = currentUser?.role === "ADMIN";
 
-  const ids = users.map((item) => item.id);
-  const allChecked = ids.length > 0 && ids.every((id) => selected.has(id));
-  const someChecked = ids.some((id) => selected.has(id));
+  function roleActions(item: ManagedUser) {
+    if (!canDelete) return [];
+
+    return [
+      ...(item.role !== "ADMIN"
+        ? [
+            {
+              label: "Jadikan Admin",
+              icon: <ShieldCheck />,
+              onSelect: () => updateUser.mutate({ id: item.id, role: "ADMIN" }),
+            },
+          ]
+        : []),
+      ...(item.role !== "INSTRUCTOR"
+        ? [
+            {
+              label: "Jadikan Instruktur",
+              icon: <Presentation />,
+              onSelect: () =>
+                updateUser.mutate({ id: item.id, role: "INSTRUCTOR" }),
+            },
+          ]
+        : []),
+      ...(item.role !== "STUDENT"
+        ? [
+            {
+              label: "Jadikan Siswa",
+              icon: <GraduationCap />,
+              onSelect: () =>
+                updateUser.mutate({ id: item.id, role: "STUDENT" }),
+            },
+          ]
+        : []),
+    ];
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -175,39 +201,6 @@ export default function UsersPage() {
           </div>
         </div>
 
-        {canDelete ? (
-          <BulkActionBar count={selected.size} onClear={clear}>
-            <Select
-              value=""
-              onValueChange={(role) =>
-                bulk.mutate(
-                  { action: "role", ids: [...selected], role },
-                  { onSuccess: clear },
-                )
-              }
-            >
-              <SelectTrigger className="h-8 w-[150px] text-[13px]">
-                <SelectValue placeholder="Ubah role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="STUDENT">Jadikan Siswa</SelectItem>
-                <SelectItem value="INSTRUCTOR">Jadikan Instruktur</SelectItem>
-                <SelectItem value="ADMIN">Jadikan Admin</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button
-              size="sm"
-              variant="destructive"
-              disabled={bulk.isPending}
-              onClick={() => setBulkDeleting(true)}
-            >
-              <Trash2 className="size-3.5" />
-              Hapus
-            </Button>
-          </BulkActionBar>
-        ) : null}
-
         <div className="mt-4">
           {isLoading ? (
             <Skeleton className="h-40 w-full" />
@@ -223,15 +216,6 @@ export default function UsersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  {canDelete ? (
-                    <TableHead className="w-10">
-                      <Checkbox
-                        aria-label="Pilih semua"
-                        checked={allChecked ? true : someChecked ? "indeterminate" : false}
-                        onCheckedChange={() => toggleAll(ids)}
-                      />
-                    </TableHead>
-                  ) : null}
                   {["NAMA", "ROLE", "NIM", "PRODI", "PATH"].map((head) => (
                     <TableHead
                       key={head}
@@ -247,19 +231,7 @@ export default function UsersPage() {
               </TableHeader>
               <TableBody>
                 {users.map((item) => (
-                  <TableRow
-                    key={item.id}
-                    data-state={selected.has(item.id) ? "selected" : undefined}
-                  >
-                    {canDelete ? (
-                      <TableCell>
-                        <Checkbox
-                          aria-label={`Pilih ${item.name}`}
-                          checked={selected.has(item.id)}
-                          onCheckedChange={() => toggle(item.id)}
-                        />
-                      </TableCell>
-                    ) : null}
+                  <TableRow key={item.id}>
                     <TableCell className="text-[13px] font-medium">
                       {item.name}
                       <span className="block text-xs font-normal text-muted-foreground">
@@ -301,6 +273,7 @@ export default function UsersPage() {
                     <TableCell>
                       <RowActions
                         label={`Aksi ${item.name}`}
+                        actions={roleActions(item)}
                         onEdit={() => {
                           setEditing(item);
                           setFormOpen(true);
@@ -319,14 +292,10 @@ export default function UsersPage() {
           <DataTablePagination
             meta={data.meta}
             itemLabel="user"
-            onPageChange={(next) => {
-              setPage(next);
-              clear();
-            }}
+            onPageChange={setPage}
             onPerPageChange={(value) => {
               setPerPage(value);
               setPage(1);
-              clear();
             }}
           />
         ) : null}
@@ -356,25 +325,6 @@ export default function UsersPage() {
           if (!deleting) return;
           remove.mutate(deleting.id, { onSuccess: () => setDeleting(null) });
         }}
-      />
-
-      <ConfirmDeleteDialog
-        open={bulkDeleting}
-        onOpenChange={setBulkDeleting}
-        title={`Hapus ${selected.size} user?`}
-        description="Semua akun terpilih beserta enrollment dan progresnya akan dihapus permanen."
-        isPending={bulk.isPending}
-        onConfirm={() =>
-          bulk.mutate(
-            { action: "delete", ids: [...selected] },
-            {
-              onSuccess: () => {
-                clear();
-                setBulkDeleting(false);
-              },
-            },
-          )
-        }
       />
     </div>
   );

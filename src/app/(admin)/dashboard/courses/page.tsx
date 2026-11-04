@@ -4,15 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Archive, FilePen, Plus, Search, Send, Trash2 } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 
-import { BulkActionBar } from "@/components/admin/bulk-action-bar";
 import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
 import { RowActions } from "@/components/admin/row-actions";
+import { buildStatusActions } from "@/components/admin/row-status-actions";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { DataTablePagination } from "@/components/ui/pagination";
 import {
@@ -31,7 +30,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useBulkAction, useRowSelection } from "@/hooks/use-bulk";
 import { api, type ApiEnvelope } from "@/lib/api-client";
 import type { Course, Paginated, Path, Tag } from "@/types";
 
@@ -70,9 +68,6 @@ export default function CoursesPage() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
   const [deleting, setDeleting] = useState<Course | null>(null);
-  const [bulkDeleting, setBulkDeleting] = useState(false);
-
-  const { selected, toggle, toggleAll, clear } = useRowSelection();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["courses", page, perPage, search, status, pathId, tagId],
@@ -124,32 +119,28 @@ export default function CoursesPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
-  const bulk = useBulkAction("/courses/bulk", [["courses"], ["stats"]]);
+  const changeStatus = useMutation({
+    mutationFn: async ({
+      id,
+      status,
+    }: {
+      id: string;
+      status: Course["status"];
+    }) => {
+      await api.put(`/courses/${id}`, { status });
+    },
+    onSuccess: () => {
+      toast.success("Status course diperbarui");
+      void queryClient.invalidateQueries({ queryKey: ["courses"] });
+      void queryClient.invalidateQueries({ queryKey: ["stats"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
 
   const courses = data?.items ?? [];
-  const ids = courses.map((course) => course.id);
-  const allChecked = ids.length > 0 && ids.every((id) => selected.has(id));
-  const someChecked = ids.some((id) => selected.has(id));
 
   function resetPage() {
     setPage(1);
-    clear();
-  }
-
-  function runBulk(action: "status" | "delete", nextStatus?: Course["status"]) {
-    bulk.mutate(
-      {
-        action,
-        ids: [...selected],
-        ...(nextStatus ? { status: nextStatus } : {}),
-      },
-      {
-        onSuccess: () => {
-          clear();
-          setBulkDeleting(false);
-        },
-      },
-    );
   }
 
   return (
@@ -243,47 +234,6 @@ export default function CoursesPage() {
           </Select>
         </div>
 
-        <BulkActionBar count={selected.size} onClear={clear}>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={bulk.isPending}
-            onClick={() => runBulk("status", "PUBLISHED")}
-          >
-            <Send className="size-3.5" />
-            Publikasikan
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={bulk.isPending}
-            onClick={() => runBulk("status", "DRAFT")}
-          >
-            <FilePen className="size-3.5" />
-            Draft
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={bulk.isPending}
-            onClick={() => runBulk("status", "ARCHIVED")}
-          >
-            <Archive className="size-3.5" />
-            Arsipkan
-          </Button>
-          {isAdmin ? (
-            <Button
-              size="sm"
-              variant="destructive"
-              disabled={bulk.isPending}
-              onClick={() => setBulkDeleting(true)}
-            >
-              <Trash2 className="size-3.5" />
-              Hapus
-            </Button>
-          ) : null}
-        </BulkActionBar>
-
         <div className="mt-4">
           {isLoading ? (
             <div className="flex flex-col gap-3 py-6">
@@ -304,13 +254,6 @@ export default function CoursesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-10">
-                    <Checkbox
-                      aria-label="Pilih semua"
-                      checked={allChecked ? true : someChecked ? "indeterminate" : false}
-                      onCheckedChange={() => toggleAll(ids)}
-                    />
-                  </TableHead>
                   {["COURSE", "PATH", "TAG", "SISWA", "STATUS"].map((head) => (
                     <TableHead
                       key={head}
@@ -326,17 +269,7 @@ export default function CoursesPage() {
               </TableHeader>
               <TableBody>
                 {courses.map((course) => (
-                  <TableRow
-                    key={course.id}
-                    data-state={selected.has(course.id) ? "selected" : undefined}
-                  >
-                    <TableCell>
-                      <Checkbox
-                        aria-label={`Pilih ${course.title}`}
-                        checked={selected.has(course.id)}
-                        onCheckedChange={() => toggle(course.id)}
-                      />
-                    </TableCell>
+                  <TableRow key={course.id}>
                     <TableCell>
                       <Link
                         href={`/dashboard/courses/${course.id}`}
@@ -362,6 +295,9 @@ export default function CoursesPage() {
                     <TableCell>
                       <RowActions
                         label={`Aksi ${course.title}`}
+                        actions={buildStatusActions(course.status, (next) =>
+                          changeStatus.mutate({ id: course.id, status: next }),
+                        )}
                         onEdit={() => router.push(`/dashboard/courses/${course.id}`)}
                         onDelete={
                           isAdmin ? () => setDeleting(course) : undefined
@@ -379,14 +315,10 @@ export default function CoursesPage() {
           <DataTablePagination
             meta={data.meta}
             itemLabel="course"
-            onPageChange={(next) => {
-              setPage(next);
-              clear();
-            }}
+            onPageChange={setPage}
             onPerPageChange={(value) => {
               setPerPage(value);
               setPage(1);
-              clear();
             }}
           />
         ) : null}
@@ -401,15 +333,6 @@ export default function CoursesPage() {
         description="Course beserta silabus dan progres siswa akan dihapus permanen."
         isPending={remove.isPending}
         onConfirm={() => deleting && remove.mutate(deleting.id)}
-      />
-
-      <ConfirmDeleteDialog
-        open={bulkDeleting}
-        onOpenChange={setBulkDeleting}
-        title={`Hapus ${selected.size} course?`}
-        description="Semua course terpilih beserta silabus dan progres siswa akan dihapus permanen."
-        isPending={bulk.isPending}
-        onConfirm={() => runBulk("delete")}
       />
     </div>
   );

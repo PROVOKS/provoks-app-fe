@@ -10,13 +10,28 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+export type RowAction = {
+  label: string;
+  icon?: React.ReactNode;
+  onSelect: () => void;
+  destructive?: boolean;
+  disabled?: boolean;
+};
+
 type RowActionsProps = {
+  /** Aksi khusus baris (ubah status, kode akses, ubah role, dst). */
+  actions?: RowAction[];
   onEdit?: () => void;
   onDelete?: () => void;
   label?: string;
 };
 
-export function RowActions({ onEdit, onDelete, label = "Aksi baris" }: RowActionsProps) {
+export function RowActions({
+  actions = [],
+  onEdit,
+  onDelete,
+  label = "Aksi baris",
+}: RowActionsProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -29,14 +44,31 @@ export function RowActions({ onEdit, onDelete, label = "Aksi baris" }: RowAction
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-40">
-        <DropdownMenuItem onClick={onEdit}>
-          <Pencil />
-          Edit
-        </DropdownMenuItem>
+      <DropdownMenuContent align="end" className="w-48">
+        {actions.map((action) => (
+          <DropdownMenuItem
+            key={action.label}
+            disabled={action.disabled}
+            variant={action.destructive ? "destructive" : undefined}
+            onClick={action.onSelect}
+          >
+            {action.icon}
+            {action.label}
+          </DropdownMenuItem>
+        ))}
+
+        {actions.length > 0 && onEdit ? <DropdownMenuSeparator /> : null}
+
+        {onEdit ? (
+          <DropdownMenuItem onClick={onEdit}>
+            <Pencil />
+            Edit
+          </DropdownMenuItem>
+        ) : null}
+
         {onDelete ? (
           <>
-            <DropdownMenuSeparator />
+            {actions.length > 0 || onEdit ? <DropdownMenuSeparator /> : null}
             <DropdownMenuItem variant="destructive" onClick={onDelete}>
               <Trash2 />
               Hapus

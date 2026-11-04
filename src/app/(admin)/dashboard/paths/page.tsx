@@ -2,17 +2,16 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Archive, FilePen, KeyRound, Plus, Search, Send, Trash2 } from "lucide-react";
+import { KeyRound, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 
-import { BulkActionBar } from "@/components/admin/bulk-action-bar";
 import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
 import { PathCodesDialog } from "@/components/admin/path-codes-dialog";
 import { PathFormDialog } from "@/components/admin/path-form-dialog";
 import { RowActions } from "@/components/admin/row-actions";
+import { buildStatusActions } from "@/components/admin/row-status-actions";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { DataTablePagination } from "@/components/ui/pagination";
 import {
@@ -31,7 +30,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useBulkAction, useRowSelection } from "@/hooks/use-bulk";
 import { api, type ApiEnvelope } from "@/lib/api-client";
 import type { Paginated, Path } from "@/types";
 
@@ -49,14 +47,11 @@ export default function PathsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Path | null>(null);
   const [deleting, setDeleting] = useState<Path | null>(null);
-  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [codesPath, setCodesPath] = useState<Path | null>(null);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<Path["status"] | "ALL">("ALL");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
-
-  const { selected, toggle, toggleAll, clear } = useRowSelection();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["paths", page, perPage, search, status],
@@ -86,32 +81,28 @@ export default function PathsPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
-  const bulk = useBulkAction("/paths/bulk", [["paths"], ["stats"]]);
+  const changeStatus = useMutation({
+    mutationFn: async ({
+      id,
+      status,
+    }: {
+      id: string;
+      status: Path["status"];
+    }) => {
+      await api.put(`/paths/${id}`, { status });
+    },
+    onSuccess: () => {
+      toast.success("Status path diperbarui");
+      void queryClient.invalidateQueries({ queryKey: ["paths"] });
+      void queryClient.invalidateQueries({ queryKey: ["stats"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
 
   const paths = data?.items ?? [];
-  const ids = paths.map((path) => path.id);
-  const allChecked = ids.length > 0 && ids.every((id) => selected.has(id));
-  const someChecked = ids.some((id) => selected.has(id));
 
   function resetPage() {
     setPage(1);
-    clear();
-  }
-
-  function runBulk(action: "status" | "delete", nextStatus?: Path["status"]) {
-    bulk.mutate(
-      {
-        action,
-        ids: [...selected],
-        ...(nextStatus ? { status: nextStatus } : {}),
-      },
-      {
-        onSuccess: () => {
-          clear();
-          setBulkDeleting(false);
-        },
-      },
-    );
   }
 
   function openCreate() {
@@ -173,47 +164,6 @@ export default function PathsPage() {
           </Select>
         </div>
 
-        <BulkActionBar count={selected.size} onClear={clear}>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={bulk.isPending}
-            onClick={() => runBulk("status", "PUBLISHED")}
-          >
-            <Send className="size-3.5" />
-            Publikasikan
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={bulk.isPending}
-            onClick={() => runBulk("status", "DRAFT")}
-          >
-            <FilePen className="size-3.5" />
-            Draft
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={bulk.isPending}
-            onClick={() => runBulk("status", "ARCHIVED")}
-          >
-            <Archive className="size-3.5" />
-            Arsipkan
-          </Button>
-          {isAdmin ? (
-            <Button
-              size="sm"
-              variant="destructive"
-              disabled={bulk.isPending}
-              onClick={() => setBulkDeleting(true)}
-            >
-              <Trash2 className="size-3.5" />
-              Hapus
-            </Button>
-          ) : null}
-        </BulkActionBar>
-
         <div className="mt-4">
           {isLoading ? (
             <Skeleton className="h-40 w-full" />
@@ -229,13 +179,6 @@ export default function PathsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-10">
-                    <Checkbox
-                      aria-label="Pilih semua"
-                      checked={allChecked ? true : someChecked ? "indeterminate" : false}
-                      onCheckedChange={() => toggleAll(ids)}
-                    />
-                  </TableHead>
                   {["PATH", "COURSE", "STATUS"].map((head) => (
                     <TableHead
                       key={head}
@@ -251,17 +194,7 @@ export default function PathsPage() {
               </TableHeader>
               <TableBody>
                 {paths.map((path) => (
-                  <TableRow
-                    key={path.id}
-                    data-state={selected.has(path.id) ? "selected" : undefined}
-                  >
-                    <TableCell>
-                      <Checkbox
-                        aria-label={`Pilih ${path.name}`}
-                        checked={selected.has(path.id)}
-                        onCheckedChange={() => toggle(path.id)}
-                      />
-                    </TableCell>
+                  <TableRow key={path.id}>
                     <TableCell className="text-[13px] font-medium">
                       {path.name}
                     </TableCell>
@@ -272,22 +205,21 @@ export default function PathsPage() {
                       {STATUS_LABEL[path.status]}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-0.5">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="size-7 text-muted-foreground"
-                        aria-label={`Kode akses ${path.name}`}
-                        onClick={() => setCodesPath(path)}
-                      >
-                        <KeyRound className="size-3.5" />
-                      </Button>
                       <RowActions
                         label={`Aksi ${path.name}`}
+                        actions={[
+                          {
+                            label: "Kode akses",
+                            icon: <KeyRound />,
+                            onSelect: () => setCodesPath(path),
+                          },
+                          ...buildStatusActions(path.status, (next) =>
+                            changeStatus.mutate({ id: path.id, status: next }),
+                          ),
+                        ]}
                         onEdit={() => openEdit(path)}
                         onDelete={isAdmin ? () => setDeleting(path) : undefined}
                       />
-                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -300,14 +232,10 @@ export default function PathsPage() {
           <DataTablePagination
             meta={data.meta}
             itemLabel="path"
-            onPageChange={(next) => {
-              setPage(next);
-              clear();
-            }}
+            onPageChange={setPage}
             onPerPageChange={(value) => {
               setPerPage(value);
               setPage(1);
-              clear();
             }}
           />
         ) : null}
@@ -332,15 +260,6 @@ export default function PathsPage() {
         description="Path beserta relasinya akan dihapus permanen. Tindakan ini tidak bisa dibatalkan."
         isPending={remove.isPending}
         onConfirm={() => deleting && remove.mutate(deleting.id)}
-      />
-
-      <ConfirmDeleteDialog
-        open={bulkDeleting}
-        onOpenChange={setBulkDeleting}
-        title={`Hapus ${selected.size} path?`}
-        description="Semua path terpilih beserta relasinya akan dihapus permanen."
-        isPending={bulk.isPending}
-        onConfirm={() => runBulk("delete")}
       />
     </div>
   );
