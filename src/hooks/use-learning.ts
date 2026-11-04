@@ -7,7 +7,20 @@ import { api, type ApiEnvelope } from "@/lib/api-client";
 import type { ContentBlock, Course, CoursePart, Path, SilabusPart, Tag } from "@/types";
 
 export type LearningBlock = ContentBlock & {
-  attempt?: { id: string; score: number; passed: boolean } | null;
+  attempt?: {
+    id: string;
+    score: number;
+    passed: boolean;
+    attemptNumber?: number;
+    submittedAt?: string | null;
+  } | null;
+  quizMeta?: {
+    attemptsUsed: number;
+    maxAttempts: number | null;
+    attemptsLeft: number | null;
+    timeLimitMinutes: number | null;
+    canAttempt: boolean;
+  } | null;
 };
 
 export type LearningSilabusPart = Omit<SilabusPart, "blocks"> & {
@@ -54,11 +67,37 @@ export type MyCourse = {
   } | null;
 };
 
+export type QuizAttemptSummary = {
+  id: string;
+  attemptNumber: number;
+  status: "IN_PROGRESS" | "SUBMITTED" | "EXPIRED";
+  score: number | null;
+  passed: boolean;
+  startedAt: string;
+  submittedAt: string | null;
+  durationSeconds: number | null;
+  timedOut: boolean;
+};
+
 export type QuizPayload = {
   id: string;
   silabusPartId: string;
   title: string;
   passingGrade: number;
+  /** null = tanpa batas waktu */
+  timeLimitMinutes: number | null;
+  /** null = tanpa batas percobaan */
+  maxAttempts: number | null;
+  attemptsUsed: number;
+  attemptsLeft: number | null;
+  canAttempt: boolean;
+  activeAttempt: {
+    id: string;
+    attemptNumber: number;
+    startedAt: string;
+    expiresAt: string | null;
+  } | null;
+  attempts: QuizAttemptSummary[];
   questions: {
     id: string;
     question: string;
@@ -66,7 +105,24 @@ export type QuizPayload = {
     points: number;
     order: number;
   }[];
-  lastAttempt: { id: string; score: number; passed: boolean } | null;
+  lastAttempt: {
+    id: string;
+    score: number | null;
+    passed: boolean;
+    attemptNumber: number;
+  } | null;
+};
+
+export type QuizStartResult = {
+  resumed: boolean;
+  attemptId: string;
+  attemptNumber: number;
+  startedAt: string;
+  expiresAt: string | null;
+  timeLimitMinutes: number | null;
+  maxAttempts: number | null;
+  attemptsUsed: number;
+  attemptsLeft: number | null;
 };
 
 export type QuizReviewItem = {
@@ -81,23 +137,31 @@ export type QuizReviewItem = {
 
 export type QuizSubmitResult = {
   attemptId: string;
+  attemptNumber: number;
   score: number;
   passed: boolean;
   passingGrade: number;
   totalPoints: number;
   earned: number;
+  durationSeconds: number;
+  timedOut: boolean;
   review: QuizReviewItem[];
 };
 
 export type QuizAttemptResult = {
   attemptId: string;
+  attemptNumber: number;
+  status: "IN_PROGRESS" | "SUBMITTED" | "EXPIRED";
   score: number;
   passed: boolean;
   passingGrade: number;
   courseTitle: string;
   quizTitle: string;
   silabusPartId: string;
-  submittedAt: string;
+  startedAt: string;
+  submittedAt: string | null;
+  durationSeconds: number | null;
+  timedOut: boolean;
   review: QuizReviewItem[];
 };
 
@@ -202,14 +266,35 @@ export function useQuiz(blockId: string) {
   });
 }
 
+export function useStartQuiz(blockId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await api.post<ApiEnvelope<QuizStartResult>>(
+        `/learning/quiz/${blockId}/start`,
+        {},
+      );
+      return data.data;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["learning-quiz", blockId] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+}
+
 export function useSubmitQuiz(blockId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (answers: Record<string, number>) => {
+    mutationFn: async (payload: {
+      attemptId: string;
+      answers: Record<string, number>;
+    }) => {
       const { data } = await api.post<ApiEnvelope<QuizSubmitResult>>(
         `/learning/quiz/${blockId}/submit`,
-        { answers },
+        payload,
       );
       return data.data;
     },

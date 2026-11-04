@@ -10,10 +10,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuizAttempt } from "@/hooks/use-learning";
 import { cn } from "@/lib/utils";
 
+function formatDuration(seconds?: number | null) {
+  if (seconds === null || seconds === undefined) return "-";
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  if (minutes === 0) return `${rest} detik`;
+  return `${minutes} menit ${rest} detik`;
+}
+
 export function QuizResult({
+  slug,
   blockId,
   attemptId,
 }: {
+  slug: string;
   blockId: string;
   attemptId: string | null;
 }) {
@@ -29,7 +39,7 @@ export function QuizResult({
           Kerjakan kuis terlebih dahulu untuk melihat hasilnya.
         </p>
         <Button asChild>
-          <Link href={`/my-course/quiz/${blockId}`}>Kerjakan Quiz</Link>
+          <Link href={`/my-course/${slug}/quiz/${blockId}`}>Kerjakan Quiz</Link>
         </Button>
       </div>
     );
@@ -61,7 +71,7 @@ export function QuizResult({
         </div>
         <Badge variant="secondary" className="gap-1.5">
           <Clock className="size-3" />
-          {new Date(result.submittedAt).toLocaleString("id-ID")}
+          {new Date(result.submittedAt ?? result.startedAt).toLocaleString("id-ID")}
         </Badge>
       </div>
 
@@ -107,6 +117,12 @@ export function QuizResult({
               Nilai minimum lulus course ini adalah {result.passingGrade}.
             </p>
 
+            <p className="text-center text-xs text-muted-foreground">
+              Percobaan ke-{result.attemptNumber} ·{" "}
+              {formatDuration(result.durationSeconds)}
+              {result.timedOut ? " · waktu habis" : ""}
+            </p>
+
             <div className="h-px w-full bg-border" />
 
             <div className="flex w-full items-center justify-between">
@@ -128,12 +144,10 @@ export function QuizResult({
 
             <div className="flex w-full flex-col gap-2.5">
               <Button className="w-full" asChild>
-                <Link href={`/my-course/${result.courseTitle ? "" : ""}`}>
-                  Lanjut belajar
-                </Link>
+                <Link href={`/my-course/${slug}`}>Lanjut belajar</Link>
               </Button>
               <Button variant="outline" className="w-full" asChild>
-                <Link href={`/my-course/quiz/${blockId}`}>
+                <Link href={`/my-course/${slug}/quiz/${blockId}`}>
                   <RotateCcw className="size-4" />
                   Ulangi Quiz
                 </Link>

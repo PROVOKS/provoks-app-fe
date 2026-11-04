@@ -62,7 +62,7 @@ function defaultsFor(type: BlockType): Content {
     case "CALLOUT":
       return { variant: "info", text: "" };
     case "QUIZ":
-      return { title: "" };
+      return { title: "", timeLimitMinutes: "", maxAttempts: "" };
     case "PDF":
     case "SLIDES":
     case "FILE":
@@ -447,9 +447,36 @@ export const BlockDialog = memo(function BlockDialog({
                 value={str("title")}
                 onChange={(event) => set("title", event.target.value)}
               />
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="block-quiz-time">Batas waktu (menit)</Label>
+                  <Input
+                    id="block-quiz-time"
+                    type="number"
+                    min={0}
+                    placeholder="Tanpa batas"
+                    value={str("timeLimitMinutes")}
+                    onChange={(event) => set("timeLimitMinutes", event.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="block-quiz-attempts">Maks percobaan</Label>
+                  <Input
+                    id="block-quiz-attempts"
+                    type="number"
+                    min={0}
+                    placeholder="Tanpa batas"
+                    value={str("maxAttempts")}
+                    onChange={(event) => set("maxAttempts", event.target.value)}
+                  />
+                </div>
+              </div>
+
               <p className="text-xs text-muted-foreground">
-                Soal kuis diatur lewat tombol &quot;Kelola Soal&quot; setelah
-                block disimpan.
+                Kosongkan untuk tanpa batas. Timer berjalan begitu siswa membuka
+                kuis. Soal kuis diatur lewat tombol &quot;Kelola Soal&quot;
+                setelah block disimpan.
               </p>
             </div>
           ) : null}

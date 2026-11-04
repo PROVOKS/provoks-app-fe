@@ -6,8 +6,8 @@ export const instant = false;
 export default async function QuizAttemptPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string; id: string }>;
 }) {
-  const { id } = await params;
-  return <QuizAttempt blockId={id} />;
+  const { slug, id } = await params;
+  return <QuizAttempt slug={slug} blockId={id} />;
 }

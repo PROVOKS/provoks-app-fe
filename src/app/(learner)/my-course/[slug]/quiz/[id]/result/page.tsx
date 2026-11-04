@@ -7,10 +7,10 @@ export default async function QuizResultPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string; id: string }>;
   searchParams: Promise<{ attempt?: string }>;
 }) {
-  const { id } = await params;
+  const { slug, id } = await params;
   const { attempt } = await searchParams;
-  return <QuizResult blockId={id} attemptId={attempt ?? null} />;
+  return <QuizResult slug={slug} blockId={id} attemptId={attempt ?? null} />;
 }

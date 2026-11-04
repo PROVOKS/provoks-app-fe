@@ -289,17 +289,51 @@ export function CoursePlayer({ slug }: { slug: string }) {
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {block.questions?.length ?? 0} soal
+                              {block.quizMeta
+                                ? ` · percobaan ${block.quizMeta.attemptsUsed}${
+                                    block.quizMeta.maxAttempts !== null
+                                      ? `/${block.quizMeta.maxAttempts}`
+                                      : ""
+                                  }`
+                                : ""}
+                              {block.quizMeta?.timeLimitMinutes
+                                ? ` · ${block.quizMeta.timeLimitMinutes} menit`
+                                : " · tanpa batas waktu"}
                               {block.attempt
                                 ? ` · skor terakhir ${block.attempt.score}`
                                 : ""}
                             </span>
                           </div>
                         </div>
-                        <Button asChild variant={quizPassed ? "outline" : "default"}>
-                          <Link href={`/my-course/quiz/${block.id}`}>
-                            {quizPassed ? "Lihat / Ulangi Quiz" : "Mulai Quiz"}
-                          </Link>
-                        </Button>
+                        <div className="flex shrink-0 items-center gap-2">
+                          {block.attempt ? (
+                            <Button asChild variant="outline" size="sm">
+                              <Link
+                                href={`/my-course/${slug}/quiz/${block.id}/result?attempt=${block.attempt.id}`}
+                              >
+                                Lihat Jawaban
+                              </Link>
+                            </Button>
+                          ) : null}
+
+                          {!block.attempt ? (
+                            <Button asChild size="sm">
+                              <Link href={`/my-course/${slug}/quiz/${block.id}`}>
+                                Mulai Quiz
+                              </Link>
+                            </Button>
+                          ) : block.quizMeta?.canAttempt ?? true ? (
+                            <Button asChild size="sm">
+                              <Link href={`/my-course/${slug}/quiz/${block.id}`}>
+                                Mulai Lagi
+                              </Link>
+                            </Button>
+                          ) : (
+                            <Button size="sm" variant="outline" disabled>
+                              Kesempatan habis
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     ) : (
                       <BlockRenderer key={block.id} block={block} />
