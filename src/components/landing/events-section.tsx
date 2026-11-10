@@ -119,13 +119,19 @@ export function EventsSection() {
   return (
     <section id="event" className="scroll-mt-24 bg-black">
       <div className="mx-auto w-full max-w-[1290px] px-6 py-20 sm:px-10 lg:py-28">
-        <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
+        <div
+          data-reveal
+          className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center"
+        >
           <h2 className="text-balance text-3xl font-bold text-[#F77229] sm:text-4xl">
             <SplitHeading text="EVENT" />
           </h2>
         </div>
 
-        <div className="mt-20 flex flex-col gap-16 lg:mt-24 lg:gap-24">
+        <div
+          data-reveal-stagger
+          className="mt-20 flex flex-col gap-16 lg:mt-24 lg:gap-24"
+        >
           {eventsContent.map((event) => (
             <article
               key={event.title}
@@ -137,7 +143,7 @@ export function EventsSection() {
                 <h3 className="text-balance font-heading text-2xl font-bold text-white sm:text-3xl">
                   {event.title}
                 </h3>
-                <p className="max-w-[528px] text-base/7 text-white sm:text-lg/8">
+                <p className="max-w-[560px] text-base/7 text-white sm:text-lg/8">
                   {event.description}
                 </p>
               </div>

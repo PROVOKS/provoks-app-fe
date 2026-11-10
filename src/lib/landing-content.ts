@@ -129,9 +129,9 @@ export const eventsContent: LandingEvent[] = [
   {
     title: "OLIVIA",
     description:
-      "Olimpiade Vokasi Indonesia (OLIVIA) adalah kompetisi tahunan nasional bagi mahasiswa vokasi Indonesia untuk mengasah keterampilan teknis, berkompetisi, dan menampilkan karya inovatif.",
+      "OLIVIA (Olimpiade Vokasi Indonesia) adalah kompetisi nasional tahunan mahasiswa vokasi untuk mengasah skill teknis, berkompetisi, dan berkarya inovatif.",
     images: [
-      "/images/events/olivia.svg",
+      "/images/olivia-cyber.jpeg",
       "/images/olivia-ub.jpeg",
       "/images/olivia-surabaya.jpeg",
     ],
@@ -167,10 +167,11 @@ export const footerContent = {
     { label: "Event", href: "#event" },
   ],
   social: [
-    { label: "Instagram", href: "#" },
-    { label: "LinkedIn", href: "#" },
-    { label: "Github", href: "#" },
+    { label: "Instagram", href: "https://www.instagram.com/provoks_ub?utm_source=ig_web_button_share_sheet&xtok=ZDNlZDc0MzIxNw==" },
+    { label: "LinkedIn", href: "https://www.linkedin.com/company/provoks-community/" },
+    { label: "Discord", href: "https://discord.gg/DZsgchdJC" },
+    { label: "GitHub", href: "https://github.com/PROVOKS" },
   ],
-  contact: "halo@provoks.id",
+  contact: "provoks.@gmail.com",
   copyright: "© 2026 Provoks. All rights reserved.",
 };

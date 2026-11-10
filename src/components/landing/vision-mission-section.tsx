@@ -7,7 +7,10 @@ export function VisionMissionSection() {
   return (
     <section id="visi-misi" className="scroll-mt-24 bg-black">
       <div className="mx-auto w-full max-w-[1290px] px-6 py-20 sm:px-10 lg:py-28">
-        <div className="flex flex-col items-center gap-4 text-center">
+        <div
+          data-reveal
+          className="flex flex-col items-center gap-4 text-center"
+        >
           <h2 className="text-3xl font-bold text-[#F77229] sm:text-4xl">
             <SplitHeading text="Vision" />
           </h2>
@@ -16,7 +19,10 @@ export function VisionMissionSection() {
           </p>
         </div>
 
-        <div className="mt-20 flex flex-col items-center gap-10 lg:mt-24">
+        <div
+          data-reveal
+          className="mt-20 flex flex-col items-center gap-10 lg:mt-24"
+        >
           <h2 className="text-3xl font-bold text-[#F77229] sm:text-4xl">
             <SplitHeading text="Missions" />
           </h2>

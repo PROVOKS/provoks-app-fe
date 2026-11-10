@@ -10,7 +10,7 @@ export function AboutSection() {
   return (
     <section id="about" className="scroll-mt-24 bg-black">
       <div className="mx-auto grid w-full max-w-[1290px] items-center gap-12 px-6 py-20 sm:px-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-16 lg:py-28">
-        <div className="flex flex-col gap-6">
+        <div data-reveal className="flex flex-col gap-6">
           <h2 className="text-balance text-3xl font-bold text-[#F77229] sm:text-4xl lg:text-[44px] lg:leading-[1.1]">
             <SplitHeading text={aboutContent.title} />
           </h2>
@@ -47,7 +47,10 @@ export function AboutSection() {
           </ul>
         </div>
 
-        <div className="relative mx-auto aspect-[2/3] w-full max-w-[340px] overflow-hidden rounded-3xl border border-white/10 bg-white/5 sm:max-w-[380px] lg:ml-auto lg:mr-0">
+        <div
+          data-reveal
+          className="relative mx-auto aspect-[2/3] w-full max-w-[340px] overflow-hidden rounded-3xl border border-white/10 bg-white/5 sm:max-w-[380px] lg:ml-auto lg:mr-0"
+        >
           <Image
             src={aboutContent.image}
             alt="Foto panitia Provoks"

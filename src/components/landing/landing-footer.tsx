@@ -1,13 +1,8 @@
-import { Briefcase, Camera, GitBranch, Mail, type LucideIcon } from "lucide-react";
+import { Mail } from "lucide-react";
 
+import { SocialIcon } from "@/components/landing/social-icon";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { footerContent } from "@/lib/landing-content";
-
-const SOCIAL_ICONS: Record<string, LucideIcon> = {
-  Instagram: Camera,
-  LinkedIn: Briefcase,
-  Github: GitBranch,
-};
 
 export function LandingFooter() {
   return (
@@ -48,7 +43,7 @@ export function LandingFooter() {
 
         <div className="flex flex-col gap-3">
           <p className="text-xs font-semibold tracking-[2px] text-white">
-            TERHUBUNG
+            FOLLOW US
           </p>
           <a
             href={`mailto:${footerContent.contact}`}
@@ -58,20 +53,16 @@ export function LandingFooter() {
             {footerContent.contact}
           </a>
           <div className="mt-1 flex gap-2">
-            {footerContent.social.map((item) => {
-              const Icon = SOCIAL_ICONS[item.label] ?? Mail;
-
-              return (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  aria-label={item.label}
-                  className="grid size-10 place-items-center rounded-xl bg-black text-white transition-colors hover:bg-black/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F77229]"
-                >
-                  <Icon className="size-4" />
-                </a>
-              );
-            })}
+            {footerContent.social.map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                aria-label={item.label}
+                className="grid size-10 place-items-center rounded-xl bg-black text-white transition-colors hover:bg-black/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F77229]"
+              >
+                <SocialIcon name={item.label} />
+              </a>
+            ))}
           </div>
         </div>
       </div>

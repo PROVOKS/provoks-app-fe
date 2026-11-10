@@ -26,13 +26,19 @@ export function PathsSection() {
   return (
     <section id="path" className="scroll-mt-24 bg-black">
       <div className="mx-auto w-full max-w-[1290px] px-6 py-20 sm:px-10 lg:py-28">
-        <div className="mx-auto flex max-w-xl flex-col items-center gap-3 text-center">
+        <div
+          data-reveal
+          className="mx-auto flex max-w-xl flex-col items-center gap-3 text-center"
+        >
           <h2 className="text-balance text-3xl font-bold text-[#F77229] sm:text-4xl">
             <SplitHeading text="Path PROVOKS" />
           </h2>
         </div>
 
-        <div className="mt-20 grid grid-cols-2 gap-8 sm:grid-cols-3 lg:mt-25 lg:grid-cols-5 lg:gap-10">
+        <div
+          data-reveal-stagger
+          className="mt-20 grid grid-cols-2 gap-8 sm:grid-cols-3 lg:mt-25 lg:grid-cols-5 lg:gap-10"
+        >
           {pathsContent.map((path) => {
             const Icon = PATH_ICONS[path.key];
 
@@ -65,7 +71,7 @@ export function PathsSection() {
           })}
         </div>
 
-        <div className="mt-16 flex justify-center">
+        <div data-reveal className="mt-16 flex justify-center">
           <Button
             asChild
             className="h-11 gap-2 rounded-full bg-[#F77229] px-6 text-sm font-semibold text-white hover:bg-[#F77229]/90"

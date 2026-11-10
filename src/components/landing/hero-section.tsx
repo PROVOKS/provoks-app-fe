@@ -29,19 +29,31 @@ export function HeroSection() {
       />
 
       <div className="relative z-10 mx-auto flex w-full max-w-[1290px] flex-col items-center gap-8 px-6 pt-28 pb-20 text-center text-white lg:px-10 lg:pt-32">
-        <div className="flex flex-col items-center gap-4 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-4 motion-safe:duration-700">
-          <h1 className="max-w-5xl text-balance font-heading text-5xl leading-[1.02] font-bold text-white sm:text-6xl lg:text-7xl">
+        <div className="flex flex-col items-center gap-4">
+          <h1
+            data-hero-item
+            className="max-w-5xl text-balance font-heading text-5xl leading-[1.02] font-bold text-white sm:text-6xl lg:text-7xl"
+          >
             <SplitHeading text={heroContent.title} />
           </h1>
-          <p className="rounded-full border border-white/15 bg-white/5 px-4 py-1.5 font-heading text-[11px] font-semibold tracking-[2px] text-white/90 uppercase backdrop-blur-sm sm:text-xs">
+          <p
+            data-hero-item
+            className="rounded-full border border-white/15 bg-white/5 px-4 py-1.5 font-heading text-[11px] font-semibold tracking-[2px] text-white/90 uppercase backdrop-blur-sm sm:text-xs"
+          >
             {heroContent.tagline}
           </p>
-          <p className="max-w-2xl font-semibold text-white/85 sm:text-lg/8">
+          <p
+            data-hero-item
+            className="max-w-2xl font-semibold text-white/85 sm:text-lg/8"
+          >
             {heroContent.subtitle}
           </p>
         </div>
 
-        <div className="flex w-full flex-col items-center justify-center gap-3 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-4 motion-safe:duration-700 sm:w-auto sm:flex-row">
+        <div
+          data-hero-item
+          className="flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row"
+        >
           <Button
             asChild
             className="h-12 w-full gap-2 rounded-lg bg-[#F77229] px-7 text-sm font-semibold text-white hover:bg-[#F77229]/90 sm:w-auto"
@@ -52,7 +64,10 @@ export function HeroSection() {
           </Button>
         </div>
 
-        <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-white/60">
+        <ul
+          data-hero-item
+          className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-white/60"
+        >
           {heroContent.proofs.map((proof) => (
             <li key={proof} className="flex items-center gap-2">
               <span className="size-1.5 rounded-full bg-[#F77229]" />
