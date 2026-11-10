@@ -16,7 +16,7 @@ export function SplitHeading({
   return (
     <span className={cn(className)}>
       <span className="font-rafaella font-normal">{first}</span>
-      <span className="font-nexa font-bold">{rest}</span>
+      <span className="font-nexa font-semibold">{rest}</span>
     </span>
   );
 }

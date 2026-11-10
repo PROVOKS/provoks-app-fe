@@ -5,7 +5,7 @@ export type LandingNavItem = {
 
 export const landingNav: LandingNavItem[] = [
   { label: "Beranda", href: "#beranda" },
-  { label: "About", href: "#about" },
+  { label: "Tentang", href: "#about" },
   { label: "Visi & Misi", href: "#visi-misi" },
   { label: "Path", href: "#path" },
   { label: "Event", href: "#event" },
@@ -13,18 +13,39 @@ export const landingNav: LandingNavItem[] = [
 
 export const heroContent = {
   title: "PROVOKS",
+  tagline: "Programmer Vokasi · Universitas Brawijaya",
   subtitle:
-    "Wadah pengembangan talenta digital yang membekali mahasiswa dengan skill praktis, proyek nyata, dan portofolio siap industri.",
+    "UKM Vokasi untuk mengasah kemampuan pemrograman lewat proyek nyata, mentoring sebaya, dan kurikulum yang selaras industri.",
   primaryCta: { label: "Mulai Belajar", href: "/login" },
-  image: "/images/team/pengurus.svg",
+  secondaryCta: { label: "Lihat Path", href: "#path" },
+  proofs: ["Project-based", "Peer-to-peer + mentor", "Industry-aligned"],
+  image: "/images/pengurus-provoks.jpeg",
 };
 
 export const aboutContent = {
   title: "Apa itu Provoks?",
+  definition: "PROVOKS = Programmer Vokasi",
+  image: "/images/fotopanitia.jpeg",
   description: [
-    "PROVOKS atau Programmer Vokasi adalah UKM Vokasi bagi para programmer Vokasi di Universitas Brawijaya untuk mengasah, mengembangkan, dan mengeksplorasi dunia pemrograman melalui pendekatan project-based yang meninggalkan teori membosankan, peer-to-peer untuk belajar dan berkembang bersama teman sebaya serta mentor, serta industry-aligned dengan kurikulum dan materi yang selalu disesuaikan dengan kebutuhan tren teknologi dan standar industri masa kini.",
+    "UKM Vokasi bagi para programmer Vokasi di Universitas Brawijaya untuk mengasah, mengembangkan, dan mengeksplorasi dunia pemrograman.",
   ],
-  image: "/images/team/pengurus.svg",
+  pillars: [
+    {
+      title: "Project-based",
+      description:
+        "Belajar lewat proyek nyata, bukan teori yang membosankan.",
+    },
+    {
+      title: "Peer-to-peer + mentor",
+      description:
+        "Tumbuh bersama teman sebaya dan dibimbing langsung oleh mentor.",
+    },
+    {
+      title: "Industry-aligned",
+      description:
+        "Kurikulum dan materi mengikuti tren serta standar industri masa kini.",
+    },
+  ],
 };
 
 export const visionMissionContent = {
@@ -45,7 +66,7 @@ export const visionMissionContent = {
     {
       title: "Conquer",
       description:
-        "Membangun kemampuan teknis dan pola pikir problem-solving melalui pembelajaran serta praktik teknologi.",
+        "Menyiapkan anggota untuk berkompetisi dan berkontribusi di industri teknologi.",
     },
   ],
 };
@@ -55,14 +76,41 @@ export type LandingPathKey = "web" | "mobile" | "iot" | "uiux" | "game";
 export type LandingPath = {
   key: LandingPathKey;
   name: string;
+  tagline: string;
+  image?: string;
 };
 
 export const pathsContent: LandingPath[] = [
-  { key: "web", name: "Web Development" },
-  { key: "mobile", name: "Mobile Development"},
-  { key: "iot", name: "Internet of Things" },
-  { key: "uiux", name: "UI/UX & PM" },
-  { key: "game", name: "Game Development" },
+  {
+    key: "web",
+    name: "Web Development",
+    tagline: "Frontend & Backend",
+    image: "/images/path/web.png",
+  },
+  {
+    key: "mobile",
+    name: "Mobile Development",
+    tagline: "Android & iOS",
+    image: "/images/path/mobile.png",
+  },
+  {
+    key: "iot",
+    name: "Internet of Things",
+    tagline: "Hardware & Firmware",
+    image: "/images/path/iot.png",
+  },
+  {
+    key: "uiux",
+    name: "UI/UX & PM",
+    tagline: "Design & Product",
+    image: "/images/path/uiux-pm.png",
+  },
+  {
+    key: "game",
+    name: "Game Development",
+    tagline: "Game Design & Build",
+    image: "/images/path/game.png",
+  },
 ];
 
 export type LandingEvent = {
@@ -84,8 +132,8 @@ export const eventsContent: LandingEvent[] = [
       "Program kolaboratif yang mendorong anggota belajar, berkompetisi, dan berkarya bersama dalam satu tujuan.",
     images: [
       "/images/events/olivia.svg",
-      "/images/events/olivia.svg",
-      "/images/events/olivia.svg",
+      "/images/olivia-ub.jpeg",
+      "/images/olivia-surabaya.jpeg",
     ],
   },
   {
@@ -99,12 +147,21 @@ export const eventsContent: LandingEvent[] = [
   },
 ];
 
+export const closingCtaContent = {
+  title: "Siap jadi Programmer Vokasi?",
+  description:
+    "Mulai perjalananmu lewat path terstruktur, mentoring, dan proyek nyata yang siap masuk portofolio.",
+  primaryCta: { label: "Mulai Belajar", href: "/login" },
+  secondaryCta: { label: "Lihat Path", href: "#path" },
+};
+
 export const footerContent = {
   description:
-    "Wadah pengembangan talenta digital untuk mahasiswa yang siap berkarya di industri teknologi.",
+    "PROVOKS (Programmer Vokasi) adalah UKM Vokasi Universitas Brawijaya untuk talenta digital yang siap berkarya.",
+  tagline: "Programmer Vokasi · Universitas Brawijaya",
   links: [
     { label: "Beranda", href: "#beranda" },
-    { label: "About", href: "#about" },
+    { label: "Tentang", href: "#about" },
     { label: "Visi & Misi", href: "#visi-misi" },
     { label: "Path", href: "#path" },
     { label: "Event", href: "#event" },

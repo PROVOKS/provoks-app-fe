@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 export function LandingNavbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [active, setActive] = useState<string>("");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -27,6 +28,28 @@ export function LandingNavbar() {
     };
   }, [open]);
 
+  useEffect(() => {
+    const sections = landingNav
+      .map((item) => document.getElementById(item.href.slice(1)))
+      .filter((element): element is HTMLElement => Boolean(element));
+
+    if (!sections.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+        if (visible) setActive(`#${visible.target.id}`);
+      },
+      { rootMargin: "-45% 0px -50% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] },
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <header
       className={cn(
@@ -36,71 +59,23 @@ export function LandingNavbar() {
           : "border-b border-transparent bg-transparent",
       )}
     >
-      <div className="flex h-20 w-full items-center justify-between gap-6 px-6 lg:h-24 lg:px-10">
-        <Link
-          href="/"
-          onClick={() => setOpen(false)}
-          className="flex items-center gap-3 lg:ml-[max(0px,calc((100vw_-_1290px)/2))]"
-        >
-          <BrandLogo className="h-14 lg:h-16" />
-        </Link>
-
-        <div className="hidden items-center gap-3 lg:flex">
-          <nav className="flex items-center gap-1">
-            {landingNav.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="rounded-full px-4 py-2 text-sm font-medium text-white/70 transition-colors hover:text-[#F77229]"
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
-
-          <Button
-            asChild
-            className="h-10 rounded-full bg-[#F77229] px-6 text-sm font-semibold text-white hover:bg-[#F77229]/90"
-          >
-            <Link href="/login">Masuk</Link>
-          </Button>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setOpen((value) => !value)}
-          aria-label={open ? "Tutup menu" : "Buka menu"}
-          aria-expanded={open}
-          className="grid size-10 place-items-center rounded-xl bg-white/10 lg:hidden"
-        >
-          {open ? <X className="size-5" /> : <Menu className="size-5" />}
-        </button>
-      </div>
-
-      {open ? (
-        <div className="border-t border-white/15 bg-black lg:hidden">
-          <nav className="mx-auto flex w-full max-w-[1290px] flex-col gap-1 px-6 py-4 lg:px-10">
-            {landingNav.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 transition-colors hover:text-[#F77229]"
-              >
-                {item.label}
-              </a>
-            ))}
-            <Button
-              asChild
-              className="mt-2 h-10 rounded-full bg-[#F77229] text-sm font-semibold text-white hover:bg-[#F77229]/90"
+      <div className="max-w-5xl mx-auto flex justify-between items-center">
+        <BrandLogo className="size-15"/>
+        <nav className="flex gap-8 items-center">
+          {landingNav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "text-base font-semibold transition-colors hover:text-[#F77229] tracking-wider",
+                active === item.href ? "text-[#F77229]" : "text-white"
+              )}
             >
-              <Link href="/login" onClick={() => setOpen(false)}>
-                Masuk
-              </Link>
-            </Button>
-          </nav>
-        </div>
-      ) : null}
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
     </header>
   );
 }

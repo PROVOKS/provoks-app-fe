@@ -26,7 +26,7 @@ function Polaroid({
   return (
     <div
       className={cn(
-        "shrink-0 bg-white p-2.5 pb-7 shadow-[0_20px_45px_-15px_rgba(0,0,0,0.75)] ring-1 ring-black/10",
+        "group/photo shrink-0 bg-white p-2.5 pb-7 shadow-[0_20px_45px_-15px_rgba(0,0,0,0.75)]",
         className,
       )}
       style={{ transform: `translateY(${translateY}px) rotate(${rotate}deg)` }}
@@ -41,9 +41,12 @@ function Polaroid({
           src={src}
           alt={alt}
           fill
-          unoptimized
+          unoptimized={src.endsWith(".svg")}
           sizes={sizes}
-          className={cn("object-cover", imageClassName)}
+          className={cn(
+            "object-cover transition-transform duration-500 group-hover/photo:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover/photo:scale-100",
+            imageClassName,
+          )}
         />
       </div>
     </div>
@@ -120,7 +123,7 @@ export function EventsSection() {
     <section id="event" className="scroll-mt-24 bg-black">
       <div className="mx-auto w-full max-w-[1290px] px-6 py-20 sm:px-10 lg:py-28">
         <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
-          <h2 className="text-3xl font-bold text-[#F77229] sm:text-4xl">
+          <h2 className="text-balance text-3xl font-bold text-[#F77229] sm:text-4xl">
             <SplitHeading text="EVENT" />
           </h2>
         </div>
@@ -134,7 +137,7 @@ export function EventsSection() {
               <EventPhotos images={event.images} title={event.title} />
 
               <div className="flex flex-col gap-3">
-                <h3 className="font-heading text-2xl font-bold text-white sm:text-3xl">
+                <h3 className="text-balance font-heading text-2xl font-bold text-white sm:text-3xl">
                   {event.title}
                 </h3>
                 <p className="max-w-[528px] text-base/7 text-white sm:text-lg/8">

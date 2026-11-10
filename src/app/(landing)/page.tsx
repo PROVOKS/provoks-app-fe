@@ -1,4 +1,5 @@
 import { AboutSection } from "@/components/landing/about-section";
+import { ClosingCtaSection } from "@/components/landing/closing-cta-section";
 import { EventsSection } from "@/components/landing/events-section";
 import { HeroSection } from "@/components/landing/hero-section";
 import { PathsSection } from "@/components/landing/paths-section";
@@ -12,6 +13,7 @@ export default function LandingPage() {
       <VisionMissionSection />
       <PathsSection />
       <EventsSection />
+      <ClosingCtaSection />
     </>
   );
 }

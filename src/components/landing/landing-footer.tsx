@@ -20,6 +20,9 @@ export function LandingFooter() {
               Provoks
             </span>
           </div>
+          <p className="text-[11px] font-semibold tracking-[2px] text-[#F77229] uppercase">
+            {footerContent.tagline}
+          </p>
           <p className="max-w-sm text-base/7 text-white">
             {footerContent.description}
           </p>
@@ -34,7 +37,7 @@ export function LandingFooter() {
               <li key={link.href}>
                 <a
                   href={link.href}
-                  className="text-white transition-colors hover:text-[#F77229]"
+                  className="text-white transition-colors hover:text-[#F77229] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F77229]"
                 >
                   {link.label}
                 </a>
@@ -49,7 +52,7 @@ export function LandingFooter() {
           </p>
           <a
             href={`mailto:${footerContent.contact}`}
-            className="flex items-center gap-2 text-sm text-white transition-colors hover:text-[#F77229]"
+            className="flex w-fit items-center gap-2 text-sm text-white transition-colors hover:text-[#F77229] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F77229]"
           >
             <Mail className="size-4" />
             {footerContent.contact}
@@ -63,7 +66,7 @@ export function LandingFooter() {
                   key={item.label}
                   href={item.href}
                   aria-label={item.label}
-                  className="grid size-10 place-items-center rounded-xl bg-black text-white transition-colors hover:bg-black/80"
+                  className="grid size-10 place-items-center rounded-xl bg-black text-white transition-colors hover:bg-black/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F77229]"
                 >
                   <Icon className="size-4" />
                 </a>

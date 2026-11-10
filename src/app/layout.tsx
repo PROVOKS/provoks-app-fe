@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import {
-  Fraunces,
   Poppins,
   Plus_Jakarta_Sans,
   JetBrains_Mono,
@@ -19,11 +19,18 @@ const poppins = Poppins({
   display: "swap",
 });
 
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-fraunces",
+const rafaella = localFont({
+  src: "./fonts/rafaella.otf",
+  variable: "--font-rafaella-local",
   display: "swap",
-  axes: ["SOFT", "WONK"],
+  weight: "400",
+});
+
+const nekst = localFont({
+  src: "./fonts/nekst-semibold.otf",
+  variable: "--font-nekst-local",
+  display: "swap",
+  weight: "600",
 });
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -53,7 +60,7 @@ export default function RootLayout({
   return (
     <html lang="id" suppressHydrationWarning>
       <body
-        className={`${poppins.variable} ${fraunces.variable} ${plusJakarta.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        className={`${poppins.variable} ${rafaella.variable} ${nekst.variable} ${plusJakarta.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
         <Providers>
           <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
