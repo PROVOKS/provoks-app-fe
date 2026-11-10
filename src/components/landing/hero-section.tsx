@@ -33,8 +33,8 @@ export function HeroSection() {
           <h1 className="max-w-5xl text-balance font-heading text-5xl leading-[1.02] font-bold text-white sm:text-6xl lg:text-7xl">
             <SplitHeading text={heroContent.title} />
           </h1>
-          <p className="rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-[11px] font-semibold tracking-[2px] text-white/90 uppercase backdrop-blur-sm sm:text-xs">
-            <SplitHeading text={heroContent.tagline} />
+          <p className="rounded-full border border-white/15 bg-white/5 px-4 py-1.5 font-heading text-[11px] font-semibold tracking-[2px] text-white/90 uppercase backdrop-blur-sm sm:text-xs">
+            {heroContent.tagline}
           </p>
           <p className="max-w-2xl font-semibold text-white/85 sm:text-lg/8">
             {heroContent.subtitle}

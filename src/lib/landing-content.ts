@@ -129,7 +129,7 @@ export const eventsContent: LandingEvent[] = [
   {
     title: "OLIVIA",
     description:
-      "Program kolaboratif yang mendorong anggota belajar, berkompetisi, dan berkarya bersama dalam satu tujuan.",
+      "Olimpiade Vokasi Indonesia (OLIVIA) adalah kompetisi tahunan nasional bagi mahasiswa vokasi Indonesia untuk mengasah keterampilan teknis, berkompetisi, dan menampilkan karya inovatif.",
     images: [
       "/images/events/olivia.svg",
       "/images/olivia-ub.jpeg",

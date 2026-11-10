@@ -30,13 +30,9 @@ export function PathsSection() {
           <h2 className="text-balance text-3xl font-bold text-[#F77229] sm:text-4xl">
             <SplitHeading text="Path PROVOKS" />
           </h2>
-          <p className="text-sm/7 text-white/70 sm:text-base/8">
-            Lima jalur belajar, satu tujuan: siap berkarya di industri
-            teknologi.
-          </p>
         </div>
 
-        <div className="mt-12 grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5 lg:gap-10">
+        <div className="mt-20 grid grid-cols-2 gap-8 sm:grid-cols-3 lg:mt-25 lg:grid-cols-5 lg:gap-10">
           {pathsContent.map((path) => {
             const Icon = PATH_ICONS[path.key];
 

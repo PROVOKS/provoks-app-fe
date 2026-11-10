@@ -47,13 +47,13 @@ export function AboutSection() {
           </ul>
         </div>
 
-        <div className="relative aspect-[2/3] w-full overflow-hidden rounded-3xl border border-white/10 bg-white/5">
+        <div className="relative mx-auto aspect-[2/3] w-full max-w-[340px] overflow-hidden rounded-3xl border border-white/10 bg-white/5 sm:max-w-[380px] lg:ml-auto lg:mr-0">
           <Image
             src={aboutContent.image}
             alt="Foto panitia Provoks"
             fill
-            sizes="(max-width: 1024px) 100vw, 45vw"
-            className="object-cover object-center"
+            sizes="(max-width: 640px) 90vw, (max-width: 1024px) 380px, 380px"
+            className="object-contain object-center"
           />
         </div>
       </div>

@@ -26,7 +26,7 @@ function Polaroid({
   return (
     <div
       className={cn(
-        "group/photo shrink-0 bg-white p-2.5 pb-7 shadow-[0_20px_45px_-15px_rgba(0,0,0,0.75)]",
+        "shrink-0 bg-white p-2.5 pb-7 shadow-[0_20px_45px_-15px_rgba(0,0,0,0.75)]",
         className,
       )}
       style={{ transform: `translateY(${translateY}px) rotate(${rotate}deg)` }}
@@ -43,10 +43,7 @@ function Polaroid({
           fill
           unoptimized={src.endsWith(".svg")}
           sizes={sizes}
-          className={cn(
-            "object-cover transition-transform duration-500 group-hover/photo:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover/photo:scale-100",
-            imageClassName,
-          )}
+          className={cn("object-cover", imageClassName)}
         />
       </div>
     </div>
