@@ -16,6 +16,8 @@
   --font-sans: var(--font-plus-jakarta);
   --font-heading: var(--font-poppins);
   --font-mono: var(--font-jetbrains-mono);
+  --font-rafaella: var(--font-fraunces);
+  --font-nexa: var(--font-poppins);
 
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -173,6 +175,12 @@
   --sidebar-accent-foreground: #faf8f5;
   --sidebar-border: #3c352c;
   --sidebar-ring: #f7722b;
+}
+
+@layer utilities {
+  .font-rafaella {
+    font-variation-settings: "SOFT" 100, "WONK" 1;
+  }
 }
 
 @layer base {

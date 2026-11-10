@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" role="img" aria-label="Foto pengurus Provoks (placeholder)">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c23c11"/>
+      <stop offset="0.55" stop-color="#f7722b"/>
+      <stop offset="1" stop-color="#a87642"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.35" r="0.6">
+      <stop offset="0" stop-color="#fff19b" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#fff19b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <circle cx="600" cy="320" r="420" fill="url(#glow)"/>
+  <g fill="#17120c" opacity="0.85">
+    <circle cx="430" cy="430" r="70"/>
+    <path d="M300 760c0-110 58-200 130-200s130 90 130 200z"/>
+    <circle cx="770" cy="400" r="78"/>
+    <path d="M625 760c0-120 65-215 145-215s145 95 145 215z"/>
+    <circle cx="600" cy="480" r="86"/>
+    <path d="M460 800c0-128 63-230 140-230s140 102 140 230z"/>
+  </g>
+  <g fill="#faf8f5" font-family="Poppins, Arial, sans-serif" text-anchor="middle">
+    <text x="600" y="104" font-size="34" font-weight="700" letter-spacing="10">PROVOKS</text>
+    <text x="600" y="856" font-size="26" font-weight="500" opacity="0.9">Foto Pengurus</text>
+  </g>
+</svg>

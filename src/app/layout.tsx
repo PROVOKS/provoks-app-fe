@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { Poppins, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import {
+  Fraunces,
+  Poppins,
+  Plus_Jakarta_Sans,
+  JetBrains_Mono,
+} from "next/font/google";
 
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +17,13 @@ const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
   variable: "--font-poppins",
   display: "swap",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  display: "swap",
+  axes: ["SOFT", "WONK"],
 });
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -41,7 +53,7 @@ export default function RootLayout({
   return (
     <html lang="id" suppressHydrationWarning>
       <body
-        className={`${poppins.variable} ${plusJakarta.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        className={`${poppins.variable} ${fraunces.variable} ${plusJakarta.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
         <Providers>
           <TooltipProvider delayDuration={200}>{children}</TooltipProvider>

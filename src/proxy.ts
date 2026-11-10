@@ -9,7 +9,7 @@ import { homeFor, isStaff } from "@/lib/roles";
  * - `/dashboard/*`  → wajib login, role ADMIN | INSTRUCTOR
  * - `/my-course/*`  → wajib login, role STUDENT
  * - `/login`        → kalau sudah login, langsung ke home sesuai role
- * - `/`             → arahkan sesuai role
+ * - `/`             → landing page publik (tidak di-redirect)
  *
  * Ini "optimistic check" untuk routing/UX. Otorisasi sebenarnya tetap
  * di backend (authenticate + authorize).
@@ -25,13 +25,6 @@ export async function proxy(request: NextRequest) {
   const isMyCourseArea =
     pathname === "/my-course" || pathname.startsWith("/my-course/");
   const isLogin = pathname === "/login";
-  const isRoot = pathname === "/";
-
-  if (isRoot) {
-    return NextResponse.redirect(
-      new URL(session ? homeFor(session.role) : "/login", request.url),
-    );
-  }
 
   if (isLogin && session) {
     return NextResponse.redirect(new URL(homeFor(session.role), request.url));
@@ -63,5 +56,5 @@ function redirectToLogin(request: NextRequest, pathname: string, search: string)
 }
 
 export const config = {
-  matcher: ["/", "/login", "/dashboard/:path*", "/my-course/:path*"],
+  matcher: ["/login", "/dashboard/:path*", "/my-course/:path*"],
 };
