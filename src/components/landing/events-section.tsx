@@ -140,7 +140,7 @@ export function EventsSection() {
               <EventPhotos images={event.images} title={event.title} />
 
               <div className="flex flex-col gap-3">
-                <h3 className="text-balance font-heading text-2xl font-bold text-white sm:text-3xl">
+                <h3 className="text-balance font-heading text-2xl font-bold text-[#F77229] sm:text-3xl">
                   {event.title}
                 </h3>
                 <p className="max-w-[560px] text-base/7 text-white sm:text-lg/8">

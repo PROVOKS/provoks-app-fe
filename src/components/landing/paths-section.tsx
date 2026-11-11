@@ -47,17 +47,17 @@ export function PathsSection() {
                 key={path.key}
                 className="flex flex-col items-center gap-3 text-center"
               >
-                <div className="group relative flex aspect-square w-full items-center justify-center text-[#F77229]">
+                <div className="relative flex aspect-square w-full items-center justify-center text-[#F77229]">
                   {path.image ? (
                     <Image
                       src={path.image}
                       alt={path.name}
                       fill
                       sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 200px"
-                      className="scale-110 object-contain transition-transform duration-300 group-hover:scale-125 motion-reduce:transition-none motion-reduce:group-hover:scale-110"
+                      className="scale-110 object-contain"
                     />
                   ) : (
-                    <Icon className="size-12 transition-transform duration-300 group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:scale-100 lg:size-14" />
+                    <Icon className="size-12 lg:size-14" />
                   )}
                 </div>
                 <div>
