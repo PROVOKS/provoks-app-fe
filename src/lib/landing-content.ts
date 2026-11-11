@@ -30,9 +30,9 @@ export const aboutContent = {
   description: [
     "UKM Vokasi bagi para programmer Vokasi di Universitas Brawijaya untuk mengasah, mengembangkan, dan mengeksplorasi dunia pemrograman.",
   ],
-  pillars: [
+  pillars: [ 
     {
-      title: "Project-based",
+      title: "Project Based",
       description:
         "Belajar lewat proyek nyata, bukan teori yang membosankan.",
     },
@@ -42,7 +42,7 @@ export const aboutContent = {
         "Tumbuh bersama teman sebaya dan dibimbing langsung oleh mentor.",
     },
     {
-      title: "Industry-aligned",
+      title: "Industry Aligned",
       description:
         "Kurikulum dan materi mengikuti tren serta standar industri masa kini.",
     },
