@@ -35,7 +35,7 @@ export function AboutSection() {
                   className="flex flex-col gap-2 border-t border-white/10 pt-4"
                 >
                   {/* <Icon className="size-5 text-[#F77229]" /> */}
-                  <h3 className="font-heading text-base font-bold text-white">
+                  <h3 className="font-heading text-base font-bold text-[#F77229]">
                     {pillar.title}
                   </h3>
                   <p className="text-sm/6 text-white/70">

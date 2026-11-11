@@ -30,7 +30,7 @@ export function ClosingCtaSection() {
             className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30"
           />
 
-          <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-6 text-white">
+          <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-6 text-[#F77229]">
             <h2 className="text-balance font-heading text-3xl font-bold sm:text-4xl lg:text-5xl">
               {closingCtaContent.title}
             </h2>
