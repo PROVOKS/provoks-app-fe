@@ -56,7 +56,7 @@ export function HeroSection() {
         >
           <Button
             asChild
-            className="h-12 w-full gap-2 rounded-lg bg-[#F77229] px-7 text-sm font-semibold text-white hover:bg-[#F77229]/90 sm:w-auto"
+            className="h-12 w-full gap-2 rounded-lg border border-white/40 bg-transparent px-7 text-sm font-semibold text-white transition-colors hover:border-[#F77229] hover:bg-[#F77229] hover:text-black sm:w-auto"
           >
             <Link href={heroContent.primaryCta.href}>
               {heroContent.primaryCta.label}
@@ -68,12 +68,12 @@ export function HeroSection() {
           data-hero-item
           className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-white/60"
         >
-          {heroContent.proofs.map((proof) => (
+          {/* {heroContent.proofs.map((proof) => (
             <li key={proof} className="flex items-center gap-2">
               <span className="size-1.5 rounded-full bg-[#F77229]" />
               {proof}
             </li>
-          ))}
+          ))} */}
         </ul>
       </div>
     </section>

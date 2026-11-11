@@ -18,7 +18,8 @@ export const heroContent = {
     "UKM Vokasi untuk mengasah kemampuan pemrograman lewat proyek nyata, mentoring sebaya, dan kurikulum yang selaras industri.",
   primaryCta: { label: "Mulai Belajar", href: "/login" },
   secondaryCta: { label: "Lihat Path", href: "#path" },
-  proofs: ["Project-based", "Peer-to-peer + mentor", "Industry-aligned"],
+  
+  //proofs: ["Project-based", "Peer-to-peer + mentor", "Industry-aligned"],
   image: "/images/pengurus-provoks.jpeg",
 };
 
