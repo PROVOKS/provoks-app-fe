@@ -9,10 +9,10 @@ import { cn } from "@/lib/utils";
 export function BrandLogo({ className }: { className?: string }) {
   return (
     <Image
-      src="/provoks_logo.png"
+      src="/images/logo-provoks.png"
       alt="Logo Provoks"
-      width={1486}
-      height={1647}
+      width={500}
+      height={500}
       sizes="96px"
       className={cn("w-auto shrink-0", className)}
     />

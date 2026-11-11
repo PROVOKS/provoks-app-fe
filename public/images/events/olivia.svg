@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000" role="img" aria-label="Olivia (placeholder)">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a87642"/>
+      <stop offset="1" stop-color="#17120c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <g fill="#ddd4ad" opacity="0.9">
+    <circle cx="560" cy="430" r="120"/>
+    <path d="M340 880c0-160 100-290 220-290s220 130 220 290z"/>
+    <circle cx="1040" cy="470" r="96"/>
+    <path d="M860 880c0-130 80-240 180-240s180 110 180 240z"/>
+  </g>
+  <g fill="#fff19b">
+    <circle cx="1230" cy="220" r="14"/>
+    <circle cx="1330" cy="280" r="9"/>
+    <circle cx="300" cy="240" r="11"/>
+  </g>
+</svg>
